@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WorkApp</title>
+    <link rel="stylesheet" media="screen" href="/static/lizi/css/login.css">
+    <link rel="stylesheet" media="screen" href="/static/layui/css/layui.css">
+    <style type="text/css">
+    	.unitspan{
+	        width: 83px;
+		    height: 36px;
+		    line-height: 36px;
+		    margin-left: 288px;
+    	}
+    	.unitspan span{
+		    font-size: 16px;
+    	}
+    	#logoid{
+		    position: absolute;
+		    top: 57%;
+		    left: 82%;
+		    font-size: 40px;
+		    color: #1E9FFF;
+    	}
+    </style>
+    <!--[if lt IE 9]>
+      <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+    <![endif]-->
+    <script src="/static/js/jquery-2.1.4.min.js"></script>
+    <script src="/static/layui/layui.js"></script>
+  </head>
+  <body>
+	<div class="layui-fluid" id="fluid01">
+		<form class="layui-form" lay-filter="appform">
+			<div class="layui-row">
+				<div class="layui-col-md1">
+					<div class="layui-input-inline">
+		      			<input lay-filter="handinsert" type="radio" name="handinsert" title="手动录入" value="1" checked>
+		      			<input lay-filter="handinsert" type="radio" name="handinsert" title="批量录入" value="2">
+			    	</div>
+				</div>
+				<div class="layui-col-md11">
+					<div class="layui-row">
+						{{range .param}}
+							<div class="layui-col-md4">
+								<div class="layui-form-item">
+									{{if eq .HTMLtype "select"}}
+										<label class="layui-form-label">{{.Info}}</label>
+										<div class="layui-input-inline">
+											<select lay-filter="{{.Name}}" lay-verify="required" lay-verType="tips" name="{{.Name}}">
+												<option value="">---请选择---</option>
+												{{range (.Childrens | splitTpl)}}
+													<option value="{{.}}">{{.}}</option>
+												{{end}}
+											</select>
+										</div>
+										<div class="unitspan"><span>{{.Unit}}</span></div>
+									{{end}}
+								</div>
+							</div>
+						{{end}}
+					</div>
+					<div class="layui-row">
+						<div class="layui-col-md4">
+							<div class="layui-form-item">
+								<label class="layui-form-label">结果类型</label>
+								<div class="layui-input-inline">
+						    		<select lay-filter="result_id" lay-verify="required" lay-verType="tips" name="result_id">
+										<option value="">---请选择---</option>
+								    	{{range .result}}
+								    		<option result-type="{{.Type}}" value="{{.ID}}">{{.Info}}</option>
+										{{end}}
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="layui-col-md8">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="layui-row layui-col-space3" style="margin-top:30px">
+				<div class="layui-col-md6">
+					<div class="layui-row" style="padding-left:30px;">
+						<div class="layui-col-md2">
+							<button class="layui-btn layui-btn-normal" id="testList" type="button" style="background-color: #FF5722">
+		  						<i class="layui-icon layui-icon-picture" style="font-size: 25px;"></i>选择图片
+		  					</button>
+						</div>
+						<div class="layui-col-md2 layui-col-md-offset1">
+							<button class="layui-btn" lay-submit lay-filter="formDemo">
+								<i class="layui-icon layui-icon-upload-drag" style="font-size: 25px;"></i>保存数据
+							</button>
+						</div>
+					</div>
+					<div class="layui-row">
+						<div class="layui-upload">
+							<div class="layui-upload-list" style="max-height: 260px;overflow: auto;">
+							    <table class="layui-table">
+						      		<colgroup>
+								        <col width="250">
+								        <col width="50">
+								        <col width="100">
+								        <col width="50">
+						      		</colgroup>
+						      		<thead>
+								        <tr>
+								        	<th>文件名</th>
+								        	<th>大小</th>
+								        	<th>上传进度</th>
+								        	<th>操作</th>
+							      		</tr>
+							      	</thead>
+							      <tbody id="demoList"></tbody>
+							    </table>
+						  	</div>
+						  	<button id="testListAction" type="button" style="display: none"></button>
+					  	</div>
+					</div>
+				</div>
+				<div class="layui-col-md6">
+					<div class="layui-row">
+						<div class="layui-col-md12">
+							<div title="可点击放大显示" id="layer-photos-2" class="layer-photos-demo" style="padding-left: 180px;">
+							  <img layer-pid="1" style="cursor: pointer;" layer-src="/static/img/workapp_logo.png" src="/static/img/workapp_logo_thumb.png" layer-index="1">
+							  <i class="layui-icon layui-icon-search" id="logoid"></i>
+							  <img layer-pid="2" style="cursor: pointer;" layer-src="/static/img/abcde.png" src="/static/img/abcde_thumb.png">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+	<div layui-row id="fluid02" style="display:none;padding-left:15px">
+		<div class="layui-row">
+			<div class="layui-col-md1">
+				<form class="layui-form" lay-filter="exportform">
+					<div class="layui-input-inline">
+		      			<input lay-filter="exportradio" type="radio" name="exportmore" title="手动录入" value="1" checked>
+		      			<input lay-filter="exportradio" type="radio" name="exportmore" title="批量录入" value="2" checked>
+			    	</div>
+				</form>
+			</div>
+			<div class="layui-col-md11">
+				<div class="layui-row">
+					<div class="layui-col-md3 layui-col-md-offset3">
+						<button type="button" class="layui-btn" style="background-color:#1E9FFF" id="uploadexcel">
+			  				<i class="layui-icon layui-icon-export" style="font-size: 20px;"></i>导入excel
+						</button>
+					</div>
+					<div class="layui-col-md3 layui-col-md-offset1">
+						<button type="button" class="layui-btn" lay-active="explortexcel" style="background-color: #2F4056">
+	          				<i class="layui-icon layui-icon-download-circle" style="font-size:24px" ></i> 下载模板
+	        			</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+  </body>
+	<script>
+		var isneedimage = true;
+		var erroruploadfile = true;
+		function makeCheckBoxHtml(childrenobj){
+			var str = '';
+			$.each(childrenobj.children,function(k,v){
+				str += '<input type="checkbox" name="result_value[]" value="'+v.value+'" title="'+v.name+'"><div class="layui-unselect layui-form-checkbox"><span>'+v.name+'</span><i class="layui-icon layui-icon-ok"></i></div>';
+			});
+			return str;
+		}
+		function makeInputHtml(childrenobj,resval){
+			if (resval == '算例说明') {
+				var str = '<div class="layui-row layui-col-space10"><div class="layui-col-md2"><label class="layui-form-label">'+resval+'</label></div><div class="layui-col-md9" style="margin-left:24px"><textarea name="result_value" lay-verify="result_value" maxlength=450 placeholder="请输入" class="layui-textarea"></textarea></div> </div> ';
+			}else{
+				var str = '<label class="layui-form-label">'+resval+'</label><div class="layui-input-inline"><input type="text" name="result_value" lay-verify="result_value" autocomplete="off" placeholder="请填写'+resval+'的值" data-pk="" data-ck="" class="layui-input"></div>';
+			}
+			
+			return str;
+		}
+		function appendChildHtml(obj,childrenobj,resval){
+			switch(childrenobj){
+				case '':
+					isneedimage = true;
+					$('#testList').show();
+					$('.layui-upload-list').show();
+					obj.html('');
+					break;
+				case 'checkbox':
+					isneedimage = true;
+					$('#testList').show();
+					$('.layui-upload-list').show();
+					var checkboxhtml = '<div class="layui-form-item"><label class="layui-form-label">'+childrenobj.info+'</label><div class="layui-input-block">'+makeCheckBoxHtml(childrenobj)+'</div></div>';
+					obj.html(checkboxhtml);
+					break;
+				case '1':
+					isneedimage = true;
+					obj.html('');
+					$('#testList').show();
+					$('.layui-upload-list').show();
+					break;
+				case '2':
+				case '3':
+					isneedimage = false;
+					$('#testList').hide();
+					$('.layui-upload-list').hide();
+					var checkboxhtml = '<div id="result_input" class="layui-form-item">'+makeInputHtml(childrenobj,resval)+'</div>';
+					obj.html(checkboxhtml);
+					break;
+			}
+		}
+		layui.use(['upload','form','layer','util'], function(){
+			var $ = layui.jquery,upload = layui.upload,form = layui.form,util=layui.util;
+			var demoListView = $('#demoList');
+			var did = false;
+			var dataid = 0;
+			form.on('select(result_id)', function(data){
+				
+				var resval = $(data.elem).find('option:selected').text();
+				var parentobj = $(data.elem).parents().eq(2);
+				var objtype = $(data.elem).find('option:selected').attr('result-type');
+				
+				appendChildHtml(parentobj.next(),objtype,resval);
+				form.render('radio');
+			}); 
+			form.on('radio(exportradio)', function(data){
+				  if (data.value == 1) {
+					$('#fluid01').show();
+				  	$('#fluid02').hide();
+				  	$('#fluid01').find('input[name="handinsert"]').eq(1).removeAttr("checked");
+				  	$('#fluid01').find('input[name="handinsert"]').eq(0).prop("checked",true);
+				  	form.render('radio');
+				}else{
+					$('#fluid01').hide();
+					$('#fluid02').show();
+					$('#fluid02').find('input[name="exportmore"]').eq(0).removeAttr("checked");
+					$('#fluid02').find('input[name="exportmore"]').eq(1).prop("checked",true);
+			  		form.render('radio');
+				}
+			}); 
+			form.on('radio(handinsert)', function(data){
+				if (data.value == 1) {
+					$('#fluid01').show();
+				  	$('#fluid02').hide();
+				  	$('#fluid01').find('input[name="handinsert"]').eq(1).removeAttr("checked");
+				  	$('#fluid01').find('input[name="handinsert"]').eq(0).prop("checked",true);
+				  	form.render('radio');
+				}else{
+					$('#fluid01').hide();
+					$('#fluid02').show();
+					$('#fluid02').find('input[name="exportmore"]').eq(0).removeAttr("checked");
+					$('#fluid02').find('input[name="exportmore"]').eq(1).prop("checked",true);
+			  		form.render('radio');
+				}
+			});   
+			form.on('submit(formDemo)', function (data) {
+					var ishavedata = $('#demoList').children().first().is("tr");
+					if (isneedimage && !ishavedata) {
+						layer.msg('请添加图片!', { icon: 7,time: 3000});
+						return false;
+					}
+					if ($('#result_input').length > 0 && $('#result_input').find('input').val() == '') {
+							layer.msg($('#result_input').find('input').attr('placeholder'), { icon: 2,time: 3000});
+							return false;
+					}
+					delete data.field.file;
+					delete data.field.handinsert;
+	                $.ajax({
+	                    url: '/index/saveDatas',
+	                    data: JSON.stringify(data.field) ,
+	                    type:'POST',
+						contentType:"application/json",
+	                    success: function (res) {
+	                    	did = res.pid;
+	                    	dataid = res.dataid;
+	                    	if (isneedimage) {
+	                    		$("#testListAction").trigger("click");
+	                    	}else{
+	                    		layer.msg('数据上传成功!', { icon: 1,time: 3000});
+	                    	}
+	                    }
+	                });
+	                return false;
+            	}
+            );
+			var	uploadListIns = upload.render({
+				    elem: '#testList'
+				    ,url: '/index/saveImages' 
+				    ,accept: 'images'
+				    ,acceptMime:'image/*'
+				    ,number:20
+				    ,drag:true
+				    ,multiple: true,
+				    method: 'POST',
+				    data:{}
+				    ,auto: false
+				    ,bindAction: '#testListAction'
+				    ,before: function(obj) {
+				    	if (did !== false) {
+				    		var resultid = form.val("appform").result_id;
+				    		var resultinfo = $('select[name="result_id"]').find("option:selected").text();
+				    		this.data.result_id = resultid;
+				    		this.data.result_info = resultinfo;
+				    		this.data.pid = did;
+				    		this.data.dataid = dataid;
+				    	}
+                	},
+				    choose: function(obj){   
+				      var files = this.files = obj.pushFile(); 
+				      //读取本地文件
+				      obj.preview(function(index, file, result){
+				        var tr = $(['<tr id="upload-'+ index +'">'
+				          ,'<td>'+ file.name +'</td>'
+				          ,'<td>'+ (file.size/1024).toFixed(1) +'kb</td>'
+				          ,'<td>等待上传</td>'
+				          ,'<td>'
+				            ,'<button class="layui-btn layui-btn-xs layui-btn-danger demo-delete">删除</button>'
+				          ,'</td>'
+				        ,'</tr>'].join(''));
+				        //删除
+				        tr.find('.demo-delete').on('click', function(){
+				          delete files[index]; //删除对应的文件
+				          tr.remove();
+				          uploadListIns.config.elem.next()[0].value = ''; //清空 input file 值，以免删除后出现同名文件不可选
+				        });
+				        demoListView.append(tr);
+				      });
+				    }
+				    ,done: function(res, index, upload){
+				    	 var tr = demoListView.find('tr#upload-'+ index),tds = tr.children();
+				      if(res.status){ //上传成功
+				      	if (res.did){
+				      		did = res.did;
+				      	}
+				        tds.eq(2).html('<span style="color: #5FB878;">上传成功</span>');
+				        delete this.files[index]; //删除文件队列已经上传成功的文件
+				      }else{
+				      	erroruploadfile = false;
+				      	tds.eq(2).html('<span style="color: #FF5722;">'+res.info+'</span>');
+				      }
+				    },
+				    allDone: function(obj){
+				    	if (!erroruploadfile) {
+				    			layer.alert('上传失败!', {icon: 2,btnAlign:'c'},function(index){
+				    					erroruploadfile = true;
+								  		layer.close(index);
+									});    
+				    	}else{
+				    		layer.alert('上传成功!', {icon: 1,btnAlign:'c'},function(index){
+				    					erroruploadfile = true;
+								 			demoListView.html('');
+								  		layer.close(index);
+									});  
+				    	}
+				    }
+			});
+			var uploadexcel = upload.render({
+		    elem: '#uploadexcel',
+		    url: '/index/importExcel',
+			accept: 'file',
+				acceptMime:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+				before: function(obj){ //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
+				layer.load();
+			},
+			done: function(res, index, upload){ //上传后的回调
+				if (!res.status) {
+				  layer.confirm(res.msg,{icon: 2, title:'导入失败！'},function(index2){
+				    layer.closeAll('loading');
+				    layer.close(index2);
+				  },function(index2){
+				    layer.closeAll('loading');
+				    layer.close(index2);
+				  });
+				}else{
+				  layer.confirm(res.msg,{icon: 1, title:'导入成功！'},function(index2){
+				    layer.closeAll('loading');
+				    layer.close(index2);
+				  },function(index2){
+				    layer.closeAll('loading');
+				    layer.close(index2);
+				  });
+				}
+			},
+			error: function(index, upload){
+				layer.closeAll('loading'); //关闭loading
+			}
+		  });
+			util.event('lay-active', {
+			    resetdata: function(obj){
+			    	$('.layui-col-lg4').last().html('');
+			    	$('#testList').show();
+			    	$('#result_input').remove();
+					$('.layui-upload-list').show();
+			    	layer.msg('表单数据已重置!', { icon: 1,time: 1500},function(){
+			    		$('#zoomImgBox').html('<h2 style="position: absolute; top:50%;left:50%;transform: translate(-50%,-50%);color: white;font-weight: bold;letter-spacing: 5px">图片预览区域</h2>');
+			    	});
+			    },
+			    explortexcel:function(obj){
+        			window.location.href = "/index/explodeExcel";
+          		}
+		  	});
+		  	layer.photos({
+			  photos: '#layer-photos-2',
+			  anim: 5
+			}); 
+		});
+	</script>
+</html>

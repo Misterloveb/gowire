@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WorkApp</title>
+    <link rel="stylesheet" media="screen" href="/static/lizi/css/login.css">
+    <link rel="stylesheet" media="screen" href="/static/layui/css/layui.css">
+    <style type="text/css">
+      blockquote span{
+        color:#FF5722;
+        letter-spacing: 2.5px;
+      }
+      .resuly_input{
+        text-align: center;
+        letter-spacing: 1px;
+      }
+      legend span{
+        font-weight: bold;
+      }
+      blockquote{
+        background-color: #e2e2e2 !important;
+      }
+    </style>
+    <script src="/static/js/jquery-2.1.4.min.js"></script>
+    <script src="/static/layui/layui.js"></script>
+  </head>
+  <body>
+	   <div class="layui-fluid">
+        <div class="layui-row">
+          <fieldset class="layui-elem-field layui-field-title">
+              <legend><span>图片地址</span></legend>
+          </fieldset>
+          <blockquote class="layui-elem-quote layui-quote-nm">
+            <span>
+              <i class="layui-icon layui-icon-notice"></i>系统提示：用于批量导入功能，填写excel中图片所在文件夹地址，例如：D:\XXX\XXX\数据图片\  代表所有图片均在“数据图片”文件夹中，其中不能再嵌套文件夹，只能放excel中的图片文件
+            </span>
+          </blockquote>
+        </div>
+        <div class="layui-row layui-col-space10">
+          <div class="layui-col-md6">
+              <div class="layui-form-item">
+                <label class="layui-form-label">文件夹地址</label>
+                <div class="layui-input-block">
+                  <input type="text" id="imgpath" value="{{.imgdirpath}}" placeholder="请输入" autocomplete="off" class="layui-input">
+                </div>
+              </div>
+          </div>
+          <div class="layui-col-md6 ">
+                <button class="layui-btn" lay-active="saveimgpath">保存图片路径</button>
+          </div>
+        </div>
+        <div class="layui-row">
+          <fieldset class="layui-elem-field layui-field-title">
+            <legend><span>系统参数</span></legend>
+          </fieldset>
+          <blockquote class="layui-elem-quote layui-quote-nm">
+            <span>
+              <i class="layui-icon layui-icon-notice"></i>系统提示：系统参数的值如果有多个，请用 | 分割开,参数值中不能包含此符号
+            </span>
+          </blockquote>
+        </div>
+        <div class="layui-row">
+          <form class="layui-form" action="">
+            <div class="layui-row">
+              {{range .params}}
+                <div class="layui-col-md3">
+                  <div class="layui-form-item">
+                    <label class="layui-form-label">
+                      {{if ne .Unit ""}}
+                        {{.Info}}({{.Unit}})
+                      {{else}}
+                        {{.Info}}
+                     {{end}}
+                    </label>
+                    <div class="layui-input-block">
+                      <input type="text" name="{{.Name}}" params-id="{{.ID}}" value="{{.Childrens}}" lay-verType='tips' title="{{.Childrens}}" lay-verify="required" placeholder="请输入数据" autocomplete="off" class="layui-input">
+                    </div>
+                  </div>
+                </div>
+             {{end}}
+            </div>
+            <div class="layui-row">
+              <div class="layui-form-item" style="text-align:center">
+                  <button type="submit" class="layui-btn" lay-submit="" lay-filter="paramsform">保存</button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="layui-row">
+          <fieldset class="layui-elem-field layui-field-title">
+            <legend><span>结果类型</span></legend>
+          </fieldset>
+        <div class="layui-row">
+          <div class="layui-col-md12">
+            <form class="layui-form" action="">
+                <div class="layui-row">
+                  <div class="layui-col-md12">
+                    <table class="layui-table" lay-skin="line" lay-size="lg">
+                      <colgroup>
+                        <col width="200">
+                        <col width="200">
+                        <col width="50">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th class="result_th">中文名称</th>
+                          <th class="result_th">数值类型</th>
+                          <th class="result_th">操作</th>
+                        </tr> 
+                      </thead>
+                      <tbody id="result_tbody">
+                        {{range .reslutsdata}}
+                          <tr>
+                            <td>
+                              <input type="text" name="info[]" value="{{.Info}}" lay-verType='tips' lay-verify="required" title="{{.Info}}" autocomplete="off" class="layui-input resuly_input">
+                            </td>
+                            <td>
+                              <div class="layui-input-inline" >
+                                <div class="layui-input-inline result_type">
+                                  <select name="type[]" lay-verify="required" lay-verType='tips'>
+                                    <option value="1" {{if eq .Type 1}} selected {{end}}>图片</option>
+                                    <option value="2" {{if eq .Type 2}} selected {{end}}>数值</option>
+                                    <option value="3" {{if eq .Type 3}} selected {{end}}>文件夹地址</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <div class="layui-btn-group">
+                                <button type="button" class="layui-btn layui-btn-sm" id="{{.ID}}" lay-active="edit_result">保存</button>
+                                <button type="button" class="layui-btn layui-btn-danger layui-btn-sm" id="{{.ID}}" lay-active="delete_result"  style="margin-left: 10px !important;">删除</button>
+                              </div>
+                            </td>
+                          </tr>
+                        {{end}}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+            </form>
+            <div class="layui-row">
+                <div class="layui-form-item" style="text-align:center">
+                    <button class="layui-btn layui-btn-normal" lay-active="add_result">新增</button>
+                </div>
+            </div>
+          </div>
+        </div>
+        <ul class="layui-fixbar"><li class="layui-icon layui-fixbar-top" lay-type="top" lay-active="gotop" style="display: list-item;"></li></ul>
+  </body>
+	<script>
+		layui.use(['form','layer','util'], function(){
+      var form = layui.form,util = layui.util,layer = layui.layer;
+      var $ = layui.jquery;
+      
+      form.on('submit(paramsform)', function(data){
+        $.ajax({
+            url: '/system/saveParamsDatas',
+            data: data.field,
+            type:'POST',
+            success: function (res) {
+              if (res.status) {
+                layer.msg('参数保存成功!', { icon: 1,time: 2000});
+              }else{
+                layer.msg('参数保存失败!', { icon: 2,time: 3000});
+              }
+            }
+        });
+        return false;
+      });
+      util.event('lay-active', {
+          gotop:function(obj){
+            $('.layui-fluid').animate({ scrollTop: 0}, 200);
+          },
+          saveimgpath:function(obj){
+            var imgpath = $('#imgpath').val();
+            $.ajax({
+                  url: '/system/saveImgDirPath',
+                  data: {imgpath:imgpath},
+                  type:'POST',
+                  success: function (res) {
+                    if (res.status) {
+                      layer.msg('保存成功!', { icon: 1,time: 2000});
+                    }else{
+                      layer.msg(res.msg, { icon: 2,time: 2000});
+                    }
+                  }
+              });
+          },
+          add_result: function(obj){
+            var inserthtml = '<tr><td><input type="text" name="info[]" lay-verify="required" lay-verType="tips" value="" title="" autocomplete="off" class="layui-input resuly_input"></td><td><div class="layui-input-inline"><div class="layui-input-inline result_type"><select name="type[]" lay-verify="required" lay-verType="tips"><option value="" selected>请选择</option><option value="1">图片</option><option value="2">数值</option><option value="3">文件夹地址</option></select></div></div></td><td><div class="layui-btn-group"><button type="button" class="layui-btn layui-btn-normal layui-btn-sm" lay-active="edit_result">保存</button><button type="button" class="layui-btn layui-btn-danger layui-btn-sm" id="" lay-active="delete_result" style="margin-left: 10px !important;">删除</button></div></td></tr>';
+              $('#result_tbody').append(inserthtml);
+              form.render();
+          },
+          edit_result:function(obj){
+            var res_info = $(obj).parents().eq(2).find('input').eq(0).val();
+            var res_type = $(obj).parents().eq(2).find('select').val();
+            var objid =  $(obj).attr('id');
+            if(!res_info){
+              layer.msg('中文名称未填写!', { icon: 2,time: 3000});
+              return false;
+            }
+            if(!res_type){
+              layer.msg('数值类型未选择!', { icon: 2,time: 3000});
+              return false;
+            }
+            if (!objid) {
+              $.ajax({
+                  url: '/system/addResult',
+                  data: {id:null,info:res_info,type:res_type},
+                  type:'POST',
+                  success: function (res) {
+                    if (res.status) {
+                      layer.msg('保存成功!', { icon: 1,time: 2000},function(){
+                        $(obj).attr('id',res.ID);
+                        $(obj).removeClass("layui-btn-normal");
+                        $(obj).next().attr('id',res.ID);
+                      });
+                    }else{
+                      layer.msg('保存失败!', { icon: 2,time: 2000});
+                    }
+                  }
+              });
+            }else{
+              $.ajax({
+                  url: '/system/editReuslt',
+                  data: {id:objid,info:res_info,type:res_type},
+                  type:'POST',
+                  success: function (res) {
+                    if (res.status) {
+                      layer.msg('保存成功!', { icon: 1,time: 2000});
+                    }else{
+                      layer.msg('保存失败!', { icon: 2,time: 2000});
+                    }
+                  }
+              });
+            }
+          },
+          delete_result:function(obj){
+            var resid = $(obj).attr('id');
+            if (resid == '') {
+              $(obj).parents().eq(2).remove();
+              form.render();
+              return false;
+            }else{
+              layer.confirm('删除后数据不可恢复，是否删除?',{icon: 3, title:'删除数据'},function(index){
+                $.ajax({
+                  url: '/system/deleteResult',
+                  data: {id:resid},
+                  type:'POST',
+                  success: function (res) {
+                    if (res.status) {
+                      layer.msg('删除成功!', { icon: 1,time: 2000},function(){
+                        $(obj).parents().eq(2).remove();
+                      });
+                    }else{
+                      layer.msg('删除失败!', { icon: 2,time: 2000});
+                    }
+                  }
+                });
+              },function(index){
+                layer.close(index);
+              });
+            }
+          }
+      });
+    });
+	</script>
+</html>

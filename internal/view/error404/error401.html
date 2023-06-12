@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="utf-8">
+<title>401</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+<svg viewBox="0 0 960 300">
+	<symbol id="s-text">
+		<text text-anchor="middle" x="50%" y="80%">401</text>
+	</symbol>
+	<g class="g-ants">
+		<use xlink:href="#s-text" class="text"></use>
+		<use xlink:href="#s-text" class="text"></use>
+		<use xlink:href="#s-text" class="text"></use>
+		<use xlink:href="#s-text" class="text"></use>
+		<use xlink:href="#s-text" class="text"></use>
+	</g>
+</svg>
+<div class="dowebok">
+	<h1>{{.title}}</h1>
+	<a id="href" href="/login">点击登陆</a>
+	<b id="wait" style="display:none">{{.time}}</b>
+</div>
+	<script type="text/javascript">
+        (function(){
+            var wait = document.getElementById('wait'),
+                href = document.getElementById('href').href;
+            var interval = setInterval(function(){
+                var time = --wait.innerHTML;
+                if(time <= 0) {
+                    location.href = href;
+                    clearInterval(interval);
+                };
+            }, 1000);
+        })();
+    </script>
+</body>
+
+</html>

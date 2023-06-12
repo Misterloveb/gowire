@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WorkApp</title>
+    <link rel="stylesheet" media="screen" href="/static/layui/css/layui.css">
+    <style type="text/css">
+    	body{
+    		background: #FAFAFA;
+    	}
+      .layui-field-title{
+        border-color: #393D49;
+      }
+      legend span{
+        font-weight: bold;
+      }
+      .layui-form-label{
+        padding: 9px 4px;
+        width: 83px;
+        color: black;
+        font-size: 16px;
+      }
+      .unitspan{
+        width: 83px;
+        height: 36px;
+        line-height: 36px;
+        margin-left: 358px;
+      }
+      .unitspan span{
+        color: black;
+        font-size: 16px;
+      }
+      .layui-form-item{
+        margin-bottom: 0px !important;
+      }
+    </style>
+    <script src="/static/js/jquery-2.1.4.min.js"></script>
+    <script src="/static/layui/layui.js"></script>
+  </head>
+  <body>
+    <div class="layui-fluid">
+      <div class="layui-row" style="margin-top:20px">
+        <form class="layui-form" lay-filter="searchform">
+          <div class="layui-row">
+            <div class="layui-col-md3" style="width: 17% !important;">
+              <div class="layui-form-item">
+                <input type="radio" name="searchorlog" lay-filter="switchinput" value="1" title="数据查询" checked>
+                <input type="radio" name="searchorlog" lay-filter="switchinput" value="2" title="查看日志" >
+              </div>
+            </div>
+            <div class="layui-col-md9" id="selectdata9">
+              <div class="layui-row">
+                {{range .fields}}
+                    <div class="layui-col-md3">
+                      <div class="layui-form-item">
+                        {{if eq .HTMLtype "select"}}
+                            <label class="layui-form-label">{{.Info}}
+                              {{if ne .Unit ""}}
+                              ({{.Unit}})
+                              {{end}}
+                            </label>
+                            <div class="layui-input-block">
+                              <select lay-filter="selectobj" name="{{.Name}}">
+                                <option value="">---不限---</option>
+                                {{range (.Childrens | splitTpl)}}
+                                  <option value="{{.}}">{{.}}</option>
+                                {{end}}
+                            </select>
+                          </div>
+                       {{end}}
+                        </div>
+                    </div>
+                 {{end}}
+                <div class="layui-col-md2" style="width:23.666667% !important">
+                    <div class="layui-form-item">
+                      <label class="layui-form-label">录入方式</label>
+                      <div class="layui-input-block">
+                        <select lay-filter="selectobj" name="insert_type">
+                          <option value="">---不限---</option>
+                          <option value="1">批量录入</option>
+                          <option value="2">手动录入</option>
+                        </select>
+                      </div>
+                    </div>
+                </div>
+                <div class="layui-col-md1" style="width:0.666667% !important">
+                  <div class="layui-form-item">
+                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="searchformbtn">
+                      开始查询
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>          
+      </div>
+      <div class="layui-row">
+        <div class="layui-col-md12">
+          <table class="layui-hide" id="querylog" lay-filter="logfilter"></table>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script type="text/html" id="resultselect">
+    <a class="layui-btn layui-btn-xs reslist" lay-event="lookallres">查看 <i class="layui-icon layui-icon-down"></i></a>
+  </script>
+  <script type="text/html" id="searchformid">
+    <div class="layui-btn-container">
+      <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="deletelog">
+        <i class="layui-icon">&#xe640;</i>
+      </button>
+    </div>
+  </script>
+  <script type="text/html" id="searchformid2">
+    <div class="layui-btn-container">
+      <button class="layui-btn layui-btn-danger layui-btn-sm" title="删除" lay-event="deletedata">
+        <i class="layui-icon">&#xe640;</i>
+      </button>
+    </div>
+  </script>
+  <script>
+    (function () {
+    var columns = JSON.parse('{{.columns}}');
+    var columns2 = JSON.parse('{{.columns2}}');
+    var resultarr = JSON.parse('{{.resultarr}}');
+    var radioval = '';
+    var zhuansu = '';
+    var qingjiao = '';
+    var lcckbz = '';
+    var insert_type = '';
+    var isclick = 0; 
+    function addlogs(dataobj){
+      dataobj.result_id = parseInt(dataobj.result_id,10)
+      dataobj.result_type = parseInt(dataobj.result_type,10)
+      $.ajax({
+        url: '/loger/saveLogs',
+        data: JSON.stringify(dataobj),
+        type:'POST',
+        contentType:"application/json"
+      });
+    }
+    layui.use(['form','table','layer','util'], function(){
+      var table = layui.table,layer = layui.layer,$=layui.$,util=layui.util,form=layui.form,dropdown=layui.dropdown;
+      table.render({
+        elem: '#querylog',
+        url: '/loger/searchData',
+        method:'post',
+        where:{zhuansu:'',qingjiao:'',lcckbz:'',insert_type:'',isclick:isclick},
+        height: 'full-100',
+        toolbar:'#searchformid2',
+        defaultToolbar: [{
+          title:'导出数据',
+          layEvent:'exportalldatas',
+          icon:'layui-icon-export'
+        },'filter'],
+        limits:[10,30,50,100],
+        text:{none: '暂无相关数据'},
+        cols:columns2,
+        page:true,
+        id:'firsttab',
+        done: function(res, curr, count){
+          if (radioval == 2) {
+            $('#layui-table-page1').append('<div class="layui-inline" style="margin-bottom:10px;margin-left:10px"><button type="button" title="刷新列表" class="layui-btn  layui-btn-warm layui-btn-xs" lay-active="refresh_tablelist"><i class="layui-icon layui-icon-refresh"></i></button></div>');
+            $('.layui-laypage-btn').eq(0).css({'background-color':'#009688','color':'#FAFAFA'});
+          }
+        }
+      });
+      var dropdownfun = function(that,trdata){
+        dropdown.render({
+          elem: that,
+          show: true,
+          data: resultarr,
+          align: 'center',
+          isSpreadItem:false,
+          click: function(data){
+            var result_id = data.id;
+            var restype = data.mytype;
+            var kid = trdata.kid;
+            trdata.result_id = result_id;
+            trdata.result_type = restype;
+            trdata.result_info = data.title;
+            trdata.result_value = '';
+
+            if(restype == 1){
+              $.ajax({
+                url: '/loger/checkImg',
+                data: {"kid":kid,"result_id":result_id},
+                type:'POST',
+                success:function(res) {
+                  if (res.status == 1) {
+                    addlogs(trdata);
+                    layer.open({
+                      type: 2,
+                      title: data.title+'-图片列表',
+                      closeBtn: 1,
+                      anim:4,
+                      maxmin:true,
+                      area: ['60%','90%'],
+                      skin: 'layui-layer-molv',
+                      shadeClose: false,
+                      shade :0,
+                      success: function(layero){
+                        layer.setTop(layero);
+                      },
+                      id:'ltdata_'+trdata.id+'_'+result_id,
+                      content: '/loger/viewImage?pkid='+trdata.kid+'&result_id='+result_id
+                    });
+                  }else{
+                    layer.msg('数据不存在!', { icon: 0});
+                  }
+                }
+              });
+            }
+            if (restype == 2 || restype == 3) {
+              $.ajax({
+                url: '/loger/searchResult',
+                data: {"kid":trdata.kid,"result_id":result_id},
+                type:'POST',
+                success: function(res2){ 
+                  if (res2.status) {
+                    if (restype == 2) {
+                      trdata.result_value = res2.resdata.result_value;
+                      addlogs(trdata);
+                      layer.alert('内容', {
+                        icon: 6,
+                        title: res2.resdata.result_info,
+                        content: res2.resdata.result_value,
+                        skin: 'layer-ext-demo'
+                      });
+                    }
+                    if (restype == 3) {
+                      if(!res2.resdata.result_value){
+                        layer.msg('文件夹地址为空!', { icon: 2});
+                        return false;
+                      }
+                      trdata.result_value = res2.resdata.result_value;
+                      $.ajax({
+                        url: '/loger/openFileDir',
+                        data: {"path":res2.resdata.result_value,"nobase64":1},
+                        type:'POST',
+                        success: function(res2){ 
+                          if (res2.status) {
+                            layer.msg('文件夹打开成功!', { icon: 1},function(){
+                              addlogs(trdata);
+                            });
+                          }else{
+                            layer.msg('文件夹打开失败!', { icon: 2});
+                          }             
+                        }
+                      });
+                    }
+                  }else{
+                    layer.msg('数据不存在!', { icon: 0});
+                  }             
+                }
+              });
+            }
+          },
+        });
+      };
+      table.on('tool(logfilter)', function(obj){
+        var data = obj.data; //获得当前行数据
+        var layEvent = obj.event; 
+        switch(layEvent){
+          case 'openfile':
+            if(!data.result_value){
+              layer.msg('文件夹地址为空!', { icon: 2});
+              return false;
+            }
+            $.ajax({
+              url: '/loger/openFileDir',
+              data: {"path":data.result_value,"nobase64":1},
+              type:'POST',
+              success: function(res2){ 
+                if (res2.status) {
+                  layer.msg('文件夹打开成功!', { icon: 1});
+                }else{
+                  layer.msg('文件夹打开失败!', { icon: 2});
+                }             
+              }
+            });
+            break;
+          case 'watchimg':
+            layer.open({
+              type: 2,
+              title: '图片列表',
+              closeBtn: 1,
+              anim:4,
+              maxmin:true,
+              area: ['60%','90%'],
+              skin: 'layui-layer-molv',
+              shadeClose: false,
+              shade :0,
+              moveEnd: function(layero){
+                num++;
+                layero.css('z-index',num);
+              },
+              id:radioval == '2' ? ('ltlog_'+ data.id) : ('ltdata_'+data.bid),
+              content: '/loger/viewImage?pkid='+data.kid+'&result_id='+data.result_id
+            });
+            break;
+          case 'watchresult':
+            layer.alert('内容', {
+              icon: 6,
+              title: data.result_info,
+              content:'值：'+ data.result_value,
+              skin: 'layer-ext-demo'
+            });
+            break;
+          case 'lookallres':
+             dropdownfun(this,data);
+             break;
+        }
+      });
+      table.on('toolbar(logfilter)', function(obj){
+        var checkStatus = table.checkStatus(obj.config.id);
+        var number = checkStatus.data.length;
+        var deldata = checkStatus.data;
+        var delids = [];
+        var delids2 = [];
+        var delids3 = [];
+        switch(obj.event){
+            case 'deletelog':
+              if(number < 1){
+                layer.msg('请勾选需要删除的日志！', { icon: 0,time: 3000});
+                return false;
+              }
+              $.each(deldata,function(key,val){
+                delids[key] = val.id;
+              });
+              layer.confirm('已勾选 '+number+' 条日志，删除后不可恢复，是否删除?', {icon: 3, title:'删除日志'}, function(index){
+                $.ajax({
+                    url: '/loger/deleteLog',
+                    data: {ids:delids.join(',')},
+                    type:'POST',
+                    success: function (res) {
+                      if (res.status) {
+                        layer.msg('成功删除 '+number+' 条日志!', { icon: 1,time: 1500},function(){
+                          table.reloadData('firsttab', {page:{curr:1}});
+                        });
+                      }else{
+                        layer.msg('删除失败!', { icon: 2,time: 1500});
+                      }
+                    }
+                  });
+                layer.close(index);
+              },function(index){
+                layer.close(index);
+              });
+              break;
+            case 'deletedata':
+              if(number < 1){
+                layer.msg('请勾选需要删除的数据！', { icon: 0,time: 3000});
+                return false;
+              }
+              $.each(deldata,function(key,val){
+                delids2[key] = val.kid;
+              });
+              layer.confirm('已勾选 '+number+' 条数据，删除后不可恢复，是否删除?', {icon: 3, title:'删除数据'}, function(index){
+                $.ajax({
+                    url: '/loger/deleteData',
+                    data: {kid:delids2.join(',')},
+                    type:'POST',
+                    success: function (res) {
+                      if (res.status) {
+                        layer.msg('成功删除 '+number+' 条数据!', { icon: 1,time: 1500},function(){
+                          table.reloadData('firsttab', {page:{curr:1}});
+                        });
+                      }else{
+                        layer.msg('删除失败!', { icon: 2,time: 1500});
+                      }
+                    }
+                  });
+                layer.close(index);
+              },function(index){
+                layer.close(index);
+              });
+              break;
+            case 'exportalldatas':
+              if(number < 1){
+                layer.msg('请勾选需要导出的数据！', { icon: 0,time: 3000});
+                return false;
+              }
+              $.each(deldata,function(key,val){
+                delids3[key] = val.id;
+              });
+              layer.msg('系统即将导出 '+number+' 条数据，请不要关闭浏览器！', { icon: 0,time: 3000},function(){
+                window.location.href = "/loger/exportDatas?ids="+delids3.join(',');
+              });
+        }
+      });
+      form.on('radio(switchinput)', function(data){
+        radioval = data.value;
+        if (radioval == '1') {
+          table.reload('firsttab', {
+            cols:columns2,
+            toolbar:'#searchformid2',
+            url: '/loger/searchData',
+            defaultToolbar:[{
+              title:'导出数据',
+              layEvent:'exportalldatas',
+              icon:'layui-icon-export'
+            },'filter'],
+            where:{zhuansu:zhuansu,qingjiao:qingjiao,lcckbz:lcckbz,insert_type:insert_type,isclick:isclick},
+          });
+          $('#selectdata9').show();
+        }else{
+          table.reload('firsttab', {
+            cols:columns,
+            toolbar:'#searchformid',
+            url: '/loger/getData',
+            defaultToolbar:['filter']
+          });
+          $('#selectdata9').hide();
+        }
+      });
+      form.on('submit(searchformbtn)', function(obj){
+        var data = form.val('searchform');
+        zhuansu = data.zhuansu;
+        qingjiao = data.qingjiao;
+        lcckbz = data.lcckbz;
+        insert_type = data.insert_type;
+        isclick = 1;
+        table.reloadData('firsttab', {
+            cols:columns2,
+            toolbar:'#searchformid2',
+            url: '/loger/searchData',
+            where:{zhuansu:data.zhuansu,qingjiao:data.qingjiao,lcckbz:data.lcckbz,insert_type:insert_type,isclick:isclick},
+        });
+        return false;
+      });  
+      util.event('lay-active',{
+        refresh_tablelist:function(obj){
+          table.reloadData('firsttab', {}); 
+        }
+      });
+    });
+    })()
+  </script>
+  
+</html>

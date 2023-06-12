@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WorkApp</title>
+    <link rel="stylesheet" media="screen" href="__STATIC__/layui/css/layui.css">
+    <style type="text/css">
+      legend span{
+        font-weight: bold;
+      }
+      .unitspan{
+        width: 83px;
+        height: 36px;
+        line-height: 36px;
+        margin-left: 358px;
+      }
+      .unitspan span{
+        color: black;
+        font-size: 16px;
+      }
+    </style>
+    <script src="/static/js/jquery-2.1.4.min.js"></script>
+    <script src="__STATIC__/layui/layui.js"></script>
+  </head>
+  <body>
+    <div class="layui-fluid">
+      <fieldset class="layui-elem-field layui-field-title">
+        <legend><span>查询数据</span></legend>
+      </fieldset>
+      <div class="layui-row">
+        <form class="layui-form" lay-filter="searchform">
+          {foreach name="fields" item="vo" key="pk"}
+            {foreach name="vo" item="vo2" key="ck"}
+              <div class="layui-col-md3">
+                <div class="layui-form-item">
+                  {if condition="$vo2['htmltype'] == 'select'"}
+                      <label class="layui-form-label">{$vo2.info}
+                        {if condition="$vo2.unit"}
+                          ({$vo2.unit})
+                        {/if}
+                      </label>
+                      <div class="layui-input-inline">
+                        <select lay-filter="{$vo2.name}" lay-verify="required" lay-verType="tips" name="{$vo2.name}">
+                          {foreach $vo2['childrens'] as $sval}
+                            {if condition="$sval == '请选择'"}
+                              <option value="">---请选择---</option>
+                            {else /}
+                              <option value="{$sval}">{$sval}</option>
+                            {/if}
+                        {/foreach}
+                      </select>
+                    </div>
+                  {/if}
+                  </div>
+              </div>
+            {/foreach}
+          {/foreach}
+          <div class="layui-col-md3">
+            <button class="layui-btn layui-btn-normal" lay-submit lay-filter="searchformbtn">
+              开始查询
+            </button>
+          </div>
+      </form>
+      </div>
+      <fieldset class="layui-elem-field layui-field-title">
+        <legend><span>查询日志</span></legend>
+      </fieldset>
+      <div class="layui-row">
+        <div class="layui-col-md12">
+          <table class="layui-hide" id="querylog" lay-filter="logfilter"></table>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script type="text/html" id="deletelogdata">
+    <div class="layui-btn-container">
+      <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="deletelog"><i class="layui-icon">&#xe640;</i></button>
+    </div>
+  </script>
+  <script>
+    laytpl.config({
+        open: '<#',
+        close: '#>'
+      });
+    var columns = JSON.parse('{:json_encode($columns)}');
+    layui.use(['form','table','layer','util'], function(){
+      var table = layui.table,layer = layui.layer,$=layui.$,util=layui.util,form=layui.form;
+      
+      table.render({
+        elem: '#querylog',
+        url: '/index/Querylog/getData',
+        height: 350,
+        toolbar:'#deletelogdata',
+        defaultToolbar: ['filter'],
+        limits:[10,30,50,100],
+        text:{none: '暂无相关数据'},
+        cols:columns,
+        page:true,
+        id:'firsttab'
+      });
+      table.on('tool(logfilter)', function(obj){
+        var data = obj.data; //获得当前行数据
+        var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+        alert(layEvent);
+        switch(layEvent){
+          case 'openfile':
+            if(!data.result_value){
+              layer.msg('文件夹地址为空!', { icon: 2});
+              return false;
+            }
+            $.ajax({
+              url: '/index/Handinsert/openFileDir/',
+              data: {"path":data.result_value,"nobase64":1},
+              type:'POST',
+              success: function(res2){ 
+                if (res2.status) {
+                  layer.msg('文件夹打开成功!', { icon: 1});
+                }else{
+                  layer.msg('文件夹打开失败!', { icon: 2});
+                }             
+              }
+            });
+            break;
+          case 'watchimg':
+            layer.open({
+              type: 2,
+              title: '图片列表',
+              closeBtn: 1,
+              anim:4,
+              maxmin:true,
+              area: ['60%','90%'],
+              skin: 'layui-layer-molv',
+              shadeClose: false,
+              shade :0.5,
+              content: '/index/Handinsert/viewImage?pkid='+data.kid+'&result_id='+data.result_id
+            });
+            break;
+          case 'watchresult':
+            layer.alert('内容', {
+              icon: 6,
+              title: data.result_info,
+              content:'值：'+ data.result_value,
+              skin: 'layer-ext-demo'
+            });
+            break;
+        }
+      });
+      table.on('toolbar(logfilter)', function(obj){
+        var checkStatus = table.checkStatus(obj.config.id);
+        var number = checkStatus.data.length;
+        var deldata = checkStatus.data;
+        var delids = [];
+        switch(obj.event){
+            case 'deletelog':
+              if(number < 1){
+                layer.msg('请勾选需要删除的数据！', { icon: 0,time: 3000});
+                return false;
+              }
+              $.each(deldata,function(key,val){
+                delids[key] = val.id;
+              });
+              layer.confirm('已勾选 '+number+' 条数据，删除后不可恢复，是否删除?', {icon: 3, title:'删除日志'}, function(index){
+                $.ajax({
+                    url: '/index/Querylog/deleteLog/',
+                    data: {ids:delids.join(',')},
+                    type:'POST',
+                    success: function (res) {
+                      if (res.status) {
+                        layer.msg('成功删除 '+number+' 条数据!', { icon: 1,time: 1500},function(){
+                          table.reload('firsttab', {}, true);
+                        });
+                      }else{
+                        layer.msg('删除失败!', { icon: 2,time: 1500});
+                      }
+                    }
+                  });
+                layer.close(index);
+              },function(index){
+                layer.close(index);
+              });
+              break;
+        }
+      });
+    });
+  </script>
+  <script type="text/html" id="barDemo">
+      <!-- 这里同样支持 laytpl 语法，如： -->
+      <#  if(d.result_type == '文件夹地址'){ #>
+          <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="openfile">打开文件夹</a>
+      <#  } else if(d.result_type == '图片') { #>
+          <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="watchimg">查看图片</a>
+      <#  } else { #>
+           <a class="layui-btn layui-btn-xs" lay-event="watchresult">查看数值</a>
+      <#  } #>
+  </script>
+</html>

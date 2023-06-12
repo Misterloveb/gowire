@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>浏览图片</title>
+	<link rel="stylesheet" type="text/css" href="/static/css/preview.css" />
+	<script src="/static/js/jquery-2.1.4.min.js"></script>
+	<link rel="stylesheet" media="screen" href="/static/layui/css/layui.css">
+	<style type="text/css">
+		.zoomImgBox{
+    		margin-top: 20px;
+    		margin-left: 20px;
+    	}
+    	.layui-icon-delete{
+		    font-size: 30px !important;
+		    position: relative;
+		    top: -47px;
+		    left: -30px;
+		    cursor: pointer;
+    	}
+    	.layui-icon-delete:hover{
+    		background-color: #393D49;
+    		color: white;
+    	}
+    	.imagdiv{
+		    float: left;
+		    margin-left: 20px;
+		    margin-bottom: 20px;
+    	}
+    	.zoomImgBox img{
+    		border-radius: 6px;
+    		width: 140px;
+    		height: 140px;
+    	}
+	</style>
+</head>
+<body>
+		
+			<div id="tong" class="zoomImgBox">
+			{{range .datas}}
+				<div class="imagdiv">
+					<img src="/{{.Filepath}}" id="{{.ID}}" class="zoomImg img-rounded" data-caption="{{.Filename}}" alt="{{.Filename}}"/><i class="layui-icon layui-icon-delete" lay-active="deleteimg"></i>
+				</div>
+			{{else}}
+			</div>
+			<div class="layui-fluid">
+				<div class="layui-row">
+					<div class="layui-col-md12" style="text-align:center;position:relative;top: 180px;">
+						<h1 style="color: #FF5722;font-size: 30px;letter-spacing: 3px;"><i class="layui-icon layui-icon-face-cry" style="font-size: 30px; color:#FF5722;"></i>图片不存在或已被删除</h1>
+					</div>
+				</div>
+			</div>
+		{{end}}
+</body>
+<script src="/static/js/preview.js"></script>
+<script src="/static/layui/layui.js"></script>
+<script type="text/javascript">
+	showZoomImg('.zoomImg', 'img');
+	layui.use(['layer','util'],function(){
+		var $ = layui.jquery,util=layui.util;
+		util.event('lay-active', {
+		    deleteimg: function(obj){
+		    	var imgobj = $(obj).prev();
+		    	var imgid = imgobj.attr('id');
+		    	layer.confirm('删除后不可恢复，是否删除?', {icon: 3, title:'删除图片'}, function(index){
+			  		$.ajax({
+	                    url: '/loger/deleteImg',
+	                    data: {id:imgid},
+	                    type:'POST',
+	                    success: function (res) {
+                			if (res.status) {
+                				layer.msg('图片删除成功!', { icon: 1,time: 1500},function(){
+                					imgobj.parent().fadeOut("fast",function(){
+                						imgobj.parent().remove();
+                						if (!$('#zoomImgBox').children().first().is("div")) {
+	                    					$('#zoomImgBox').html('<h2 style="position: absolute; top:50%;left:50%;transform: translate(-50%,-50%);color: white;font-weight: bold;letter-spacing: 5px">图片预览区域</h2>');
+	                    				}
+                					});
+                				});
+                			}else{
+                				layer.msg('图片删除失败!', { icon: 2,time: 1500});
+                			}
+	                    }
+	                });
+			  		layer.close(index);
+				},function(index){
+			  		layer.close(index);
+				});
+		    }
+	  	});
+	});
+</script>
+</html>

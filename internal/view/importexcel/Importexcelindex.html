@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WorkApp</title>
+    <link rel="stylesheet" media="screen" href="/static/layui/css/layui.css">
+    <style type="text/css">
+    	body{
+        background-color: #eeeeee;
+      }
+      legend span{
+        font-weight: bold;
+      }
+      blockquote{
+        background-color: #e2e2e2 !important;
+      }
+      blockquote span{
+        color:#FF5722;
+        letter-spacing: 2.5px;
+      }
+      .layui-field-title{
+        border-color: #393D49;
+      }
+      .layui-icon{
+        font-size: 18px;
+      }
+    </style>
+    <!--[if lt IE 9]>
+      <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+    <![endif]-->
+    <script src="/static/js/jquery-2.1.4.min.js"></script>
+    <script src="/static/layui/layui.js"></script>
+  </head>
+    <body>
+       <div class="layui-fluid">
+        <div class="layui-row">
+          <fieldset class="layui-elem-field layui-field-title">
+              <legend><span>批量导入数据</span></legend>
+          </fieldset>
+          <blockquote class="layui-elem-quote layui-quote-nm">
+            <span>
+              <i class="layui-icon layui-icon-notice"></i>系统提示：导入数据步骤：<br/>1: 前往"系统设置"→"图片地址"，保存excel中图片所在文件夹地址 <br/>2: 下载系统提供的excel模板文件<br/> 3: 将数据录入模板文件后进行导入
+            </span>
+          </blockquote>
+        </div>
+        <div class="layui-row" style="margin-top:40px">
+          <div class="layui-col-md6" style="height:120px;padding-left: 200px;">
+            <div class="layui-upload-drag" id="excelupload">
+              <i class="layui-icon layui-icon-upload" style="font-size:60px" ></i>
+              <p>点击导入excel，或将excel文件拖拽到此处导入</p>
+              <div class="layui-hide" id="uploadDemoView">
+              </div>
+            </div>
+          </div>
+          <div class="layui-col-md6" style="height:120px;line-height: 120px;">
+            <button type="button" class="layui-btn" lay-active="explortexcel">
+              <i class="layui-icon layui-icon-download-circle" style="font-size:30px" ></i> 下载数据导入模板
+            </button>
+          </div>
+        </div> 
+       </div>
+    </body>
+    <script type="text/javascript">
+      layui.use(['layer','util','upload'], function(){
+        var util = layui.util,layer = layui.layer,upload = layui.upload;
+        var $ = layui.jquery;
+
+        upload.render({
+          elem: '#excelupload',
+          url: '/index/Importexcel/importExcel',
+          accept: 'file',
+          acceptMime:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          before: function(obj){ //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
+            layer.load();
+          },
+          done: function(res, index, upload){ //上传后的回调
+            if (!res.status) {
+              layer.confirm(res.msg,{icon: 2, title:'导入失败！'},function(index2){
+                layer.closeAll('loading');
+                layer.close(index2);
+              },function(index2){
+                layer.closeAll('loading');
+                layer.close(index2);
+              });
+            }else{
+              layer.confirm(res.msg,{icon: 1, title:'导入成功！'},function(index2){
+                layer.closeAll('loading');
+                layer.close(index2);
+              },function(index2){
+                layer.closeAll('loading');
+                layer.close(index2);
+              });
+            }
+          },
+          error: function(index, upload){
+            layer.closeAll('loading'); //关闭loading
+          }
+        });
+        util.event('lay-active', {
+          explortexcel:function(obj){
+            window.location.href = "/index/Importexcel/explodeExcel";
+          }
+       });
+      });
+    </script>
+</html>
