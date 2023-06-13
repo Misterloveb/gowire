@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"gindemo/internal/model"
-	"gindemo/util/verificationcode"
+	"gindemo/pkg/verificationcode"
 	"log"
 	"net/http"
 	"strings"

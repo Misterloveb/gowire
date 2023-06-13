@@ -1,0 +1,23 @@
+httplog:
+  level: 5                      # 4:info log 3:warn log 2:error log 1:silent log
+  filepath: log/httplog/http.log
+  max_backups: 30               # 日志文件最多保存多少个备份
+  max_age: 14                   # 文件最多保存多少天
+  max_size: 512                 # 每个日志文件保存的最大尺寸 单位：M
+  compress: true               # 是否压缩
+serverlog:
+  level: 5                      # 6:TraceLevel 5:DebugLevel 4:InfoLevel 3:WarnLevel 2:ErrorLevel 1:FatalLevel 0:PanicLevel
+  filepath: log/serverlog/server.log
+  max_backups: 30               # 日志文件最多保存多少个备份
+  max_age: 14                   # 文件最多保存多少天
+  max_size: 512                 # 每个日志文件保存的最大尺寸 单位：M
+  compress: false               # 是否压缩
+dblog:
+  level: 4                      # 4:info log 3:warn log 2:error log 1:silent log
+  SlowThreshold: 1              #慢查询时间 秒
+  ParameterizedQueries: true    #日志中是否显示查询参数
+  filepath: log/dblog/db.log
+  max_backups: 30               # 日志文件最多保存多少个备份
+  max_age: 14                   # 文件最多保存多少天
+  max_size: 512                 # 每个日志文件保存的最大尺寸 单位：M
+  compress: true               # 是否压缩

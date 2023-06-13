@@ -30,6 +30,15 @@ const (
 )
 
 type IndexController struct {
+	*common.Server
+}
+
+func NewIndexController(
+	server *common.Server,
+) *IndexController {
+	return &IndexController{
+		Server: server,
+	}
 }
 
 func (l *IndexController) Index(ctx *gin.Context) {
