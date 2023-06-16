@@ -18,30 +18,30 @@ func NewWorkDatasV3Dao(dao *Dao) *WorkDatasV3Dao {
 
 func (w *WorkDatasV3Dao) GetData() []*model.WorkDatasV3 {
 	res := make([]*model.WorkDatasV3, 0, 30)
-	w.db.Find(&res)
+	w.Db.Find(&res)
 	return res
 }
 
-func (w *WorkDatasV3Dao) GetCount() int64 {
+func (w *WorkDatasV3Dao) GetCount(data *model.WorkDatasV3) int64 {
 	var count int64
-	w.db.Model(w).Select("COUNT(*) AS count").Count(&count)
+	w.Db.Model(data).Select("COUNT(*) AS count").Count(&count)
 	return count
 }
-func (w *WorkDatasV3Dao) GetDataByWhere(offset, limit int) []*model.WorkDatasV3 {
+func (w *WorkDatasV3Dao) GetDataByWhere(data *model.WorkDatasV3, offset, limit int) []*model.WorkDatasV3 {
 	res := make([]*model.WorkDatasV3, 0, 30)
-	w.db.Where(w).Limit(limit).Offset(offset).Find(&res)
+	w.Db.Where(data).Limit(limit).Offset(offset).Find(&res)
 	return res
 }
 
 func (w *WorkDatasV3Dao) Delete(dbobj *gorm.DB, query any, arg ...any) {
-	tmpdb := w.db
+	tmpdb := w.Db
 	if dbobj != nil {
 		tmpdb = dbobj
 	}
 	tmpdb.Where(query, arg...).Delete(w)
 }
 func (w *WorkDatasV3Dao) Insert(dbobj *gorm.DB, data []*model.WorkDatasV3) error {
-	thisdb := w.db
+	thisdb := w.Db
 	if dbobj != nil {
 		thisdb = dbobj
 	}

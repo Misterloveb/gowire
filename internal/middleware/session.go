@@ -13,7 +13,10 @@ func Session(conf *viper.Viper, store sessions.Store) gin.HandlerFunc {
 }
 
 func NewCookieStore(conf *viper.Viper) sessions.Store {
-	store := cookie.NewStore()
+	store := cookie.NewStore(
+		[]byte(conf.GetString("session.authentication")),
+		[]byte(conf.GetString("session.encryption")),
+	)
 	store.Options(sessions.Options{
 		Path:     conf.GetString("cookie.Path"),
 		Domain:   conf.GetString("cookie.Domain"),
@@ -22,5 +25,6 @@ func NewCookieStore(conf *viper.Viper) sessions.Store {
 		HttpOnly: conf.GetBool("cookie.HttpOnly"),
 		SameSite: http.SameSite(conf.GetInt("cookie.SameSite")),
 	})
-	return cookie.NewStore([]byte(conf.GetString("")))
+
+	return store
 }

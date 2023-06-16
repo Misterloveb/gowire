@@ -19,7 +19,7 @@ func NewWorkParamsDao(dao *Dao) *WorkParamsDao {
 
 func (w *WorkParamsDao) GetData() []*model.WorkParams {
 	resdata := make([]*model.WorkParams, 0, 30)
-	w.db.Order("`order`").Find(&resdata)
+	w.Db.Order("`order`").Find(&resdata)
 	return resdata
 }
 func (w *WorkParamsDao) Update(data url.Values) error {
@@ -35,7 +35,7 @@ func (w *WorkParamsDao) Update(data url.Values) error {
 		args_arr = append(args_arr, name, childrens[0])
 	}
 	str_buff.WriteString(" END")
-	res := w.db.Exec(str_buff.String(), args_arr...)
+	res := w.Db.Exec(str_buff.String(), args_arr...)
 	if res.Error != nil {
 		log.Println(res.Error.Error())
 		return res.Error

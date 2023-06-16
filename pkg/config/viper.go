@@ -1,4 +1,4 @@
-package confmanager
+package config
 
 import (
 	"fmt"
@@ -9,8 +9,7 @@ func NewViper() *viper.Viper {
 	//设置viper
 	conf := viper.New()
 	conf.AddConfigPath("config")
-	conf.SetConfigType("yml")
-
+	conf.SetConfigName("config")
 	if err := conf.ReadInConfig(); err != nil {
 		panic(fmt.Errorf("加载日志文件失败: %w", err))
 	}

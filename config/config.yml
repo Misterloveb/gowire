@@ -1,0 +1,58 @@
+app:
+  addr: 127.0.0.1:8080
+  gin_mode: debug #debug|release|test
+  static_path: static
+  template_path: internal/view/**/*
+  nologurl: static
+session:
+  sessionId: PHPSESSIONID
+  authentication: qwer123456                    #用于身份验证
+  encryption: d41d8cd98f00b204e9800998ecf8427e  #用于加密cookie中的数据 32:AES-256 24:AES-192 16:AES-128
+cookie:
+  Path: /
+  Domain:
+  MaxAge: 604800 #一周（秒）
+  Secure: false
+  HttpOnly: true
+  SameSite: 2 #2:Lax 3:Strict 4:None
+upload:
+  upload_path: upload
+  upload_maxsize: 100 #请求数据最大容量(MB)
+mysql:
+  ip: 127.0.0.1
+  port: 3306
+  user: root
+  pwd: root
+  db: workapp
+  charset: utf8mb4,utf8
+  MaxIdleTime: 30   #最大空闲连接时间(秒)
+  MaxIdleConns: 10  #空闲连接池最大数量
+  MaxOpenConns: 100 #最大打开的连接数
+  MaxLifetime: 1    #连接可复用的最长时间(小时)
+redis:
+  addr: 127.0.0.1:3309
+  password: ""
+  db: 0
+httplog:
+  level: 5                      # 4:info log 3:warn log 2:error log 1:silent log
+  filepath: log/http/http.log
+  max_backups: 30               # 日志文件最多保存多少个备份
+  max_age: 14                   # 文件最多保存多少天
+  max_size: 512                 # 每个日志文件保存的最大尺寸 单位：M
+  compress: true                # 是否压缩
+serverlog:
+  level: 5                      # 6:TraceLevel 5:DebugLevel 4:InfoLevel 3:WarnLevel 2:ErrorLevel 1:FatalLevel 0:PanicLevel
+  filepath: log/server/server.log
+  max_backups: 30               # 日志文件最多保存多少个备份
+  max_age: 14                   # 文件最多保存多少天
+  max_size: 512                 # 每个日志文件保存的最大尺寸 单位：M
+  compress: false               # 是否压缩
+dblog:
+  level: 4                      # 4:info log 3:warn log 2:error log 1:silent log
+  filepath: log/db/db.log
+  SlowThreshold: 1              #慢查询时间 秒
+  ParameterizedQueries: false    #日志中不显示查询参数
+  max_backups: 30               # 日志文件最多保存多少个备份
+  max_age: 14                   # 文件最多保存多少天
+  max_size: 512                 # 每个日志文件保存的最大尺寸 单位：M
+  compress: true                # 是否压缩

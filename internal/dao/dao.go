@@ -14,18 +14,11 @@ import (
 )
 
 type Dao struct {
-	db  *gorm.DB
-	rdb *redis.Client
+	Db  *gorm.DB
+	Rdb *redis.Client
 }
 
-func NewDao(db *gorm.DB, rdb *redis.Client) *Dao {
-	return &Dao{
-		db:  db,
-		rdb: rdb,
-	}
-}
-
-func NewDB(conf *viper.Viper, writer *writer.Writer) *gorm.DB {
+func NewDB(conf *viper.Viper) *gorm.DB {
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=True&loc=Local",
 		conf.GetString("mysql.user"),
@@ -36,7 +29,7 @@ func NewDB(conf *viper.Viper, writer *writer.Writer) *gorm.DB {
 		conf.GetString("mysql.charset"),
 	)
 	newLogger := logger.New(
-		writer, // io writer
+		log.New(writer.NewWriter(conf, "dblog"), "\r\n", log.LstdFlags), // io newWriter
 		logger.Config{
 			SlowThreshold:             time.Second * conf.GetDuration("dblog.SlowThreshold"), // Slow SQL threshold
 			LogLevel:                  logger.LogLevel(conf.GetInt("dblog.level")),           // Log level

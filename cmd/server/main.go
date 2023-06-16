@@ -1,5 +1,7 @@
 package main
 
+import "gindemo/cmd/server/wire"
+
 func main() {
-	appStart()
+	wire.App().Start()
 }

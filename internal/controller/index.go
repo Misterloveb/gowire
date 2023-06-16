@@ -17,52 +17,40 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	carbon "github.com/golang-module/carbon/v2"
+	"github.com/golang-module/carbon/v2"
 	"github.com/google/uuid"
-	"github.com/spf13/viper"
 	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
 )
 
 const (
 	xlsxfilename = "数据导入模板.xlsx"
-	xlsxfilepath = "./static/数据导入模板.xlsx"
 )
 
 type IndexController struct {
 	*common.Server
 }
 
-func NewIndexController(
-	server *common.Server,
-) *IndexController {
-	return &IndexController{
-		Server: server,
-	}
-}
-
-func (l *IndexController) Index(ctx *gin.Context) {
+func (ctl *IndexController) Index(ctx *gin.Context) {
 	session := sessions.Default(ctx)
+	ctl.Logger.Info("hello")
 	ctx.HTML(http.StatusOK, "home.html", gin.H{
 		"user": session.Get("userinfo"),
 	})
 }
 
-func (l *IndexController) Handinsert(ctx *gin.Context) {
-	workparam := model.WorkParams{}
-	workresult := model.WorkResult{}
-	res := workparam.GetData()
-	res2 := workresult.GetData()
+func (ctl *IndexController) Handinsert(ctx *gin.Context) {
+	res := ctl.WorkParamsDao.GetData()
+	res2 := ctl.WorkResultDao.GetData()
 	ctx.HTML(http.StatusOK, "Handinsertindex.html", gin.H{
 		"param":  res,
 		"result": res2,
 	})
 }
-func (l *IndexController) SaveDatas(ctx *gin.Context) {
-	workresult := &model.WorkResult{}
+func (ctl *IndexController) SaveDatas(ctx *gin.Context) {
 	insert_data := &model.WorkDatasV3{}
 	insert_data2 := &model.WorkDataresult{}
-	res2 := workresult.GetData()
+	res2 := ctl.WorkResultDao.GetData()
 	resdata := gin.H{
 		"status": 0,
 		"info":   "保存失败！",
@@ -91,26 +79,31 @@ func (l *IndexController) SaveDatas(ctx *gin.Context) {
 		}
 	}
 	insert_data2.Pkid = insert_data.Kid
-	model.DB().Transaction(func(tx *gorm.DB) error {
-		if err := insert_data.Insert(tx); err != nil {
+	err = ctl.WorkParamsDao.Db.Transaction(func(tx *gorm.DB) error {
+		if err := ctl.WorkDatasV3Dao.Insert(tx, []*model.WorkDatasV3{insert_data}); err != nil {
 			resdata["info"] = err.Error() + "1"
 			ctx.JSON(http.StatusBadRequest, resdata)
 			return err
 		}
-		if err := insert_data2.Insert(tx); err != nil {
+		if err := ctl.WorkDataResultDao.Insert(tx, []*model.WorkDataresult{insert_data2}); err != nil {
 			resdata["info"] = err.Error() + "2"
 			ctx.JSON(http.StatusBadRequest, resdata)
 			return err
 		}
 		return nil
 	})
+	if err != nil {
+		resdata["info"] = "数据保存失败！"
+		ctx.JSON(http.StatusBadRequest, resdata)
+		return
+	}
 	resdata["status"] = 1
 	resdata["pid"] = insert_data.Kid
 	resdata["dataid"] = insert_data.ID
 	resdata["info"] = "数据保存成功！"
 	ctx.JSON(http.StatusOK, resdata)
 }
-func (l *IndexController) SaveImages(ctx *gin.Context) {
+func (ctl *IndexController) SaveImages(ctx *gin.Context) {
 	file, err := ctx.FormFile("file")
 	imgobj := &model.WorkRecordV3{}
 	pid := strings.Trim(ctx.PostForm("pid"), " ")
@@ -139,7 +132,7 @@ func (l *IndexController) SaveImages(ctx *gin.Context) {
 		})
 		return
 	}
-	dst_root := filepath.Join(viper.GetString("upload.upload_path"), "img")
+	dst_root := filepath.Join(ctl.Viper.GetString("upload.upload_path"), "img")
 	imgobj.Filetype = filepath.Ext(file.Filename)
 	imgobj.Filesize = int(file.Size)
 	imgobj.Filename = uuid.New().String() + imgobj.Filetype
@@ -152,7 +145,7 @@ func (l *IndexController) SaveImages(ctx *gin.Context) {
 		})
 		return
 	}
-	if err := imgobj.Insert(nil); err != nil {
+	if err := ctl.WorkRecordV3Dao.Insert(nil, []*model.WorkRecordV3{imgobj}); err != nil {
 		ctx.JSON(200, gin.H{
 			"status": 0,
 			"info":   err.Error(),
@@ -169,7 +162,7 @@ type colParam struct {
 	name string
 }
 
-func (l *IndexController) makeColMap(pararms []*model.WorkParams, result []model.WorkResult) map[string]*colParam {
+func (ctl *IndexController) makeColMap(pararms []*model.WorkParams, result []model.WorkResult) map[string]*colParam {
 	cellarr := make(map[string]*colParam, len(pararms)+len(result))
 	var strbuffer strings.Builder
 	strbuffer.Grow(64)
@@ -195,19 +188,17 @@ func (l *IndexController) makeColMap(pararms []*model.WorkParams, result []model
 	}
 	return cellarr
 }
-func (l *IndexController) setDownloadHeader(ctx *gin.Context) {
+func (ctl *IndexController) setDownloadHeader(ctx *gin.Context) {
 	ctx.Header("Pragma", "public")
 	ctx.Header("Expires", "0")
 	ctx.Header("Cache-Control", "max-age=-1")
 	ctx.Header("Content-Type", "application/octet-stream")
 	ctx.Header("Content-Disposition", "attachment;filename="+xlsxfilename)
 }
-func (l *IndexController) ExplodeExcel(ctx *gin.Context) {
-	mod_work_params := &model.WorkParams{}
-	mod_work_result := &model.WorkResult{}
-	paramsarr := mod_work_params.GetData()
-	resultarr := mod_work_result.GetData()
-	col_map := l.makeColMap(paramsarr, resultarr)
+func (ctl *IndexController) ExplodeExcel(ctx *gin.Context) {
+	paramsarr := ctl.WorkParamsDao.GetData()
+	resultarr := ctl.WorkResultDao.GetData()
+	col_map := ctl.makeColMap(paramsarr, resultarr)
 	f := excelize.NewFile()
 	defer func() {
 		if err := f.Close(); err != nil {
@@ -217,11 +208,19 @@ func (l *IndexController) ExplodeExcel(ctx *gin.Context) {
 	defaultsheet := "Sheet1"
 	rowHeight := 26.0
 	CustomHeight := true
-	f.SetSheetProps(defaultsheet, &excelize.SheetPropsOptions{
+	err := f.SetSheetProps(defaultsheet, &excelize.SheetPropsOptions{
 		DefaultRowHeight: &rowHeight,
 		CustomHeight:     &CustomHeight,
 	})
-	f.SetRowHeight(defaultsheet, 1, 20.0)
+	if err != nil {
+		ctl.Server.Error("导出附件失败：", err.Error())
+		return
+	}
+	err = f.SetRowHeight(defaultsheet, 1, 20.0)
+	if err != nil {
+		ctl.Server.Error("导出附件失败：", err.Error())
+		return
+	}
 
 	col_buf := strings.Builder{}
 	col_buf.Grow(4)
@@ -248,8 +247,16 @@ func (l *IndexController) ExplodeExcel(ctx *gin.Context) {
 			Color: "e6071a",
 		},
 	})
-	f.SetRowStyle(defaultsheet, 1, 1, row_style)
-	f.SetColStyle(defaultsheet, "A:K", col_style)
+	err = f.SetRowStyle(defaultsheet, 1, 1, row_style)
+	if err != nil {
+		ctl.Server.Error("导出附件失败：", err.Error())
+		return
+	}
+	err = f.SetColStyle(defaultsheet, "A:K", col_style)
+	if err != nil {
+		ctl.Server.Error("导出附件失败：", err.Error())
+		return
+	}
 	for key, colname := range col_map {
 		col_buf.WriteString(key)
 		col_buf.WriteString("1")
@@ -261,24 +268,44 @@ func (l *IndexController) ExplodeExcel(ctx *gin.Context) {
 		width := float64(utf8.RuneCountInString(colname.info)) * colnum
 		wg.Add(2)
 		go func(cstr, ckey string, colobj *colParam) {
-			f.SetCellValue(defaultsheet, cstr, colobj.info)
-			f.SetCellValue(defaultsheet, ckey+"2", colobj.name)
+			err2 := f.SetCellValue(defaultsheet, cstr, colobj.info)
+			if err2 != nil {
+				ctl.Server.Error("导出附件失败：", err2.Error())
+				return
+			}
+			err2 = f.SetCellValue(defaultsheet, ckey+"2", colobj.name)
+			if err2 != nil {
+				ctl.Server.Error("导出附件失败：", err2.Error())
+				return
+			}
 			wg.Done()
 		}(colname_str, key, colname)
 		go func(k string, w float64) {
-			f.SetColWidth(defaultsheet, k, k, w)
+			err2 := f.SetColWidth(defaultsheet, k, k, w)
+			if err2 != nil {
+				ctl.Server.Error("导出附件失败：", err2.Error())
+				return
+			}
 			wg.Done()
 		}(key, width)
 		wg.Wait()
 		richtext[0].Text = colname.info
 		col_buf.Reset()
 	}
-	f.SetRowVisible(defaultsheet, 2, false)
-	l.setDownloadHeader(ctx)
-	f.Write(ctx.Writer)
+	err = f.SetRowVisible(defaultsheet, 2, false)
+	if err != nil {
+		ctl.Server.Error("导出附件失败：", err.Error())
+		return
+	}
+	ctl.setDownloadHeader(ctx)
+	err = f.Write(ctx.Writer)
+	if err != nil {
+		ctl.Server.Error("导出附件失败：", err.Error())
+		return
+	}
 }
 
-func (l *IndexController) ImportExcel(ctx *gin.Context) {
+func (ctl *IndexController) ImportExcel(ctx *gin.Context) {
 	res_data := gin.H{
 		"status": 0,
 		"msg":    "",
@@ -310,7 +337,7 @@ func (l *IndexController) ImportExcel(ctx *gin.Context) {
 		ctx.JSON(500, res_data)
 		return
 	}
-	if err := l.batchInsert(rows); err != nil {
+	if err := ctl.batchInsert(rows); err != nil {
 		res_data["msg"] = err.Error()
 		ctx.JSON(200, res_data)
 		return
@@ -318,10 +345,7 @@ func (l *IndexController) ImportExcel(ctx *gin.Context) {
 	res_data["status"] = 1
 	ctx.JSON(200, res_data)
 }
-func (l *IndexController) batchInsert(rows *excelize.Rows) error {
-	mod_work_datav3 := &model.WorkDatasV3{}
-	mod_work_dataresult := &model.WorkDataresult{}
-	mod_work_record := &model.WorkRecordV3{}
+func (ctl *IndexController) batchInsert(rows *excelize.Rows) error {
 	rows.Next()
 	work_data_arr := make([]*model.WorkDatasV3, 0, 200)
 	work_dataresult_arr := make([]*model.WorkDataresult, 0, 200)
@@ -341,25 +365,25 @@ func (l *IndexController) batchInsert(rows *excelize.Rows) error {
 		if err != nil {
 			return errors.New("获取行数据失败！")
 		}
-		wdv3 := l.makeWorkData(col_arr, insert_time)
+		wdv3 := ctl.makeWorkData(col_arr, insert_time)
 		work_data_arr = append(work_data_arr, wdv3)
-		wres, wrecord := l.makeWorkDateResult(wdv3.Kid, col_arr, name_arr, info_arr)
+		wres, wrecord := ctl.makeWorkDateResult(wdv3.Kid, col_arr, name_arr, info_arr)
 		work_dataresult_arr = append(work_dataresult_arr, wres...)
 		work_record_arr = append(work_record_arr, wrecord...)
 	}
-	err = model.DB().Transaction(func(tx *gorm.DB) error {
+	err = ctl.WorkParamsDao.Db.Transaction(func(tx *gorm.DB) error {
 		if len(work_data_arr) > 0 {
-			if err := mod_work_datav3.Insert(tx, work_data_arr...); err != nil {
+			if err := ctl.WorkDatasV3Dao.Insert(tx, work_data_arr); err != nil {
 				return err
 			}
 		}
 		if len(work_dataresult_arr) > 0 {
-			if err := mod_work_dataresult.Insert(tx, work_dataresult_arr...); err != nil {
+			if err := ctl.WorkDataResultDao.Insert(tx, work_dataresult_arr); err != nil {
 				return err
 			}
 		}
 		if len(work_record_arr) > 0 {
-			if err := mod_work_record.Insert(tx, work_record_arr...); err != nil {
+			if err := ctl.WorkRecordV3Dao.Insert(tx, work_record_arr); err != nil {
 				return err
 			}
 		}
@@ -370,7 +394,7 @@ func (l *IndexController) batchInsert(rows *excelize.Rows) error {
 	}
 	return nil
 }
-func (l *IndexController) makeWorkDateResult(pkid string, colarr, namearr, infoarr []string) ([]*model.WorkDataresult, []*model.WorkRecordV3) {
+func (ctl *IndexController) makeWorkDateResult(pkid string, colarr, namearr, infoarr []string) ([]*model.WorkDataresult, []*model.WorkRecordV3) {
 	wdatares := make([]*model.WorkDataresult, 0, 16)
 	wrecord := make([]*model.WorkRecordV3, 0, 16)
 	for i := 11; i < 25; i++ {
@@ -387,7 +411,7 @@ func (l *IndexController) makeWorkDateResult(pkid string, colarr, namearr, infoa
 			//图片
 			case "1":
 				rsid, _ := strconv.Atoi(res_type[0])
-				wrarr := l.makeWorkRecord(val, pkid, rsid)
+				wrarr := ctl.makeWorkRecord(val, pkid, rsid)
 				wrecord = append(wrecord, wrarr...)
 			//数值 ,结果文件
 			case "2", "3":
@@ -401,7 +425,7 @@ func (l *IndexController) makeWorkDateResult(pkid string, colarr, namearr, infoa
 	}
 	return wdatares, wrecord
 }
-func (l *IndexController) makeWorkRecord(imgstr string, pkid string, resultid int) []*model.WorkRecordV3 {
+func (ctl *IndexController) makeWorkRecord(imgstr string, pkid string, resultid int) []*model.WorkRecordV3 {
 	wrecord := make([]*model.WorkRecordV3, 0, 32)
 	root_img_path, err := os.ReadFile(imgdirpath)
 	if err != nil {
@@ -415,7 +439,7 @@ func (l *IndexController) makeWorkRecord(imgstr string, pkid string, resultid in
 		if common.FileExists(img_src_path) {
 			img_ext := filepath.Ext(imgname)
 			img_name := uuid.New().String() + img_ext
-			img_dst_path := viper.GetString("upload.upload_path") + "/img/" + img_name
+			img_dst_path := ctl.Viper.GetString("upload.upload_path") + "/img/" + img_name
 			wr := &model.WorkRecordV3{
 				Pkid:     pkid,
 				ResultID: resultid,
@@ -443,7 +467,7 @@ func (l *IndexController) makeWorkRecord(imgstr string, pkid string, resultid in
 	}
 	return wrecord
 }
-func (l *IndexController) makeWorkData(colarr []string, insert_time carbon.DateTime) *model.WorkDatasV3 {
+func (ctl *IndexController) makeWorkData(colarr []string, insert_time carbon.DateTime) *model.WorkDatasV3 {
 	workdata := &model.WorkDatasV3{
 		Zhuansu:  colarr[0],
 		Qingjiao: colarr[1],

@@ -16,7 +16,7 @@ func NewWorkRecordV3Dao(dao *Dao) *WorkRecordV3Dao {
 }
 
 func (w *WorkRecordV3Dao) Insert(dbobj *gorm.DB, wdata []*model.WorkRecordV3) error {
-	thisdb := w.db
+	thisdb := w.Db
 	if dbobj != nil {
 		thisdb = dbobj
 	}
@@ -27,11 +27,11 @@ func (w *WorkRecordV3Dao) Insert(dbobj *gorm.DB, wdata []*model.WorkRecordV3) er
 }
 func (w *WorkRecordV3Dao) GetDataByWhere(col string, query any, arg ...any) []*model.WorkRecordV3 {
 	res := make([]*model.WorkRecordV3, 20)
-	w.db.Select(col).Where(query, arg...).Find(&res)
+	w.Db.Select(col).Where(query, arg...).Find(&res)
 	return res
 }
 func (w *WorkRecordV3Dao) Delete(dbobj *gorm.DB, query any, arg ...any) {
-	tmpdb := w.db
+	tmpdb := w.Db
 	if dbobj != nil {
 		tmpdb = dbobj
 	}

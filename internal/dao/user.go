@@ -12,12 +12,12 @@ func NewUserDao(dao *Dao) *UserDao {
 	}
 }
 
-func (u *UserDao) Insert() error {
-	res := u.db.Create(u)
+func (u *UserDao) Insert(data *model.User) error {
+	res := u.Db.Create(data)
 	return res.Statement.Error
 }
 func (u *UserDao) GetData(query any, arg ...any) []*model.User {
 	res := make([]*model.User, 10)
-	u.db.Model(u).Select("password", "salt").Where(query, arg...).Find(&res)
+	u.Db.Model(&model.User{}).Select("password", "salt").Where(query, arg...).Find(&res)
 	return res
 }

@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"log"
 	"net/http"
@@ -17,7 +18,7 @@ type HTTP struct {
 	handler http.Handler
 }
 
-func NewHTTP(handler http.Handler, conf *viper.Viper) *HTTP {
+func NewHTTP(handler *gin.Engine, conf *viper.Viper) *HTTP {
 	return &HTTP{
 		addr:    conf.GetString("app.addr"),
 		handler: handler,
@@ -25,12 +26,12 @@ func NewHTTP(handler http.Handler, conf *viper.Viper) *HTTP {
 }
 
 func (h *HTTP) Start() {
-	server := http.Server{
-		Addr:    "",
+	ser := http.Server{
+		Addr:    h.addr,
 		Handler: h.handler,
 	}
 	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := ser.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			panic(fmt.Sprintln("服务器启动失败", err.Error()))
 		}
 	}()
@@ -40,20 +41,8 @@ func (h *HTTP) Start() {
 	log.Println("系统开始关闭。。。")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	if err := server.Shutdown(ctx); err != nil {
+	if err := ser.Shutdown(ctx); err != nil {
 		log.Fatal("系统关闭失败:", err.Error())
 	}
-	log.Println("系统已成功关闭！将再5秒后自动重启")
-	ctx, cancel = context.WithTimeout(context.Background(), time.Second*10)
-	restart := time.AfterFunc(time.Second*5, func() {
-		h.Start()
-	})
-	defer cancel()
-	select {
-	case <-ctx.Done():
-		log.Fatal("系统重启超时")
-	case <-restart.C:
-		restart.Stop()
-		log.Println("系统重启成功")
-	}
+	log.Println("系统已成功关闭！")
 }

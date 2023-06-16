@@ -1,17 +1,17 @@
 package log
 
 import (
+	"gindemo/pkg/writer"
 	"github.com/golang-module/carbon/v2"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"io"
 )
 
 type Logger struct {
 	*logrus.Logger
 }
 
-func NewLogger(conf *viper.Viper, writer io.Writer) *Logger {
+func NewLogger(conf *viper.Viper, writer *writer.Writer) *Logger {
 	logger := logrus.New()
 	logger.SetReportCaller(true)
 	logger.SetFormatter(&logrus.JSONFormatter{

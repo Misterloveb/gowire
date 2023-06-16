@@ -1,17 +1,12 @@
 package writer
 
 import (
-	"fmt"
 	"github.com/spf13/viper"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type Writer struct {
 	*lumberjack.Logger
-}
-
-func (w *Writer) Printf(s string, i ...interface{}) {
-	fmt.Printf(s, i...)
 }
 
 func NewWriter(conf *viper.Viper, key string) *Writer {

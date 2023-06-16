@@ -2,7 +2,9 @@ package controller
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
+	"gindemo/internal/common"
 	"gindemo/internal/model"
 	"gindemo/pkg/verificationcode"
 	"log"
@@ -16,58 +18,54 @@ import (
 )
 
 type LoginController struct {
-	VerifiCode *verificationcode.VerifiCode
+	VerifyCode *verificationcode.VerifiCode
+	*common.Server
 }
 
-func (l *LoginController) Login(ctx *gin.Context) {
-	// captcha_id := ctx.PostForm("captid")
+func (ctl *LoginController) Login(ctx *gin.Context) {
+	if err := ctl.validate(ctx); err != nil {
+		ctx.JSON(200, gin.H{"status": 0, "msg": err.Error()})
+		return
+	}
 	session := sessions.Default(ctx)
-	// vercode := ctx.PostForm("vercode")
-	if l.VerifiCode == nil {
-		ctx.JSON(200, gin.H{"status": 0, "msg": "验证码错误"})
-		return
-	}
-	// if !l.VerifiCode.Verify(captcha_id, vercode) {
-	// 	ctx.JSON(200, gin.H{"status": 0, "msg": "验证码错误"})
-	// 	return
-	// }
-	username := ctx.PostForm("username")
-	if !validate(username, ctx.PostForm("password")) {
-		ctx.JSON(200, gin.H{"status": 0, "msg": "用户不存在或秘密错误"})
-		return
-	}
-	session.Set("userinfo", username)
+	session.Set("userinfo", ctx.PostForm("username"))
 	session.Save()
 	ctx.JSON(200, gin.H{"status": 1})
 }
-func validate(username string, password string) bool {
-	user := &model.User{}
-	u := user.GetData("username=?", username)
+func (ctl *LoginController) validate(ctx *gin.Context) error {
+	captcha_id := ctx.PostForm("captid")
+	vercode := ctx.PostForm("vercode")
+	username := ctx.PostForm("username")
+	password := ctx.PostForm("password")
+	if ctl.VerifyCode == nil || !ctl.VerifyCode.Verify(captcha_id, vercode) {
+		return errors.New("验证码错误")
+	}
+	u := ctl.UserDao.GetData("username=?", username)
 	if len(u) == 0 {
-		return false
+		return errors.New("用户不存在或密码错误")
 	}
 	if strings.Compare(u[0].Password, hashPassword([]byte(password), u[0].Salt)) != 0 {
-		return false
+		return errors.New("用户不存在或密码错误")
 	}
-	return true
+	return nil
 }
-func (l *LoginController) Logout(ctx *gin.Context) {
+func (ctl *LoginController) Logout(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	session.Delete("userinfo")
 	session.Save()
 	ctx.HTML(http.StatusOK, "login.html", "")
 }
-func (l *LoginController) Forget(ctx *gin.Context) {
+func (ctl *LoginController) Forget(ctx *gin.Context) {
 	ctx.HTML(http.StatusOK, "forget.html", "")
 }
-func (l *LoginController) Register(ctx *gin.Context) {
+func (ctl *LoginController) Register(ctx *gin.Context) {
 	user := &model.User{}
 	pwd := []byte(strings.Trim(ctx.PostForm("password"), " "))
 	salt := fmt.Sprintf("%x", sha256.Sum256([]byte(uuid.NewString())))
 	user.Salt = salt
 	user.UserName = strings.Trim(ctx.PostForm("nickname"), " ")
 	user.Password = hashPassword(pwd, salt)
-	if err := user.Insert(); err != nil {
+	if err := ctl.UserDao.Insert(user); err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"status": 0})
 		return
 	}
@@ -80,10 +78,10 @@ func hashPassword(pwd []byte, salt string) string {
 	return fmt.Sprintf("%x", sha256.Sum256(pwd_arr))
 }
 
-func (l *LoginController) GetCaptcha(ctx *gin.Context) {
+func (ctl *LoginController) GetCaptcha(ctx *gin.Context) {
 	driver := base64Captcha.DefaultDriverDigit
-	l.VerifiCode = verificationcode.NewVerifiCode(driver)
-	id, b64s, err := l.VerifiCode.Generate()
+	ctl.VerifyCode = verificationcode.NewVerifiCode(driver)
+	id, b64s, err := ctl.VerifyCode.Generate()
 	if err != nil {
 		log.Println(err.Error())
 		return

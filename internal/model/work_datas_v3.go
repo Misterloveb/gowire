@@ -2,8 +2,6 @@ package model
 
 import (
 	"github.com/golang-module/carbon/v2"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 /******sql******
@@ -44,57 +42,6 @@ type WorkDatasV3 struct {
 	Qwsrgl     string          `gorm:"column:qwsrgl" json:"qwsrgl"`           // 球碗生热功率
 	InsertType int8            `gorm:"column:insert_type" json:"insert_type"` // 1 批量录入 2 手动录入
 	InsertTime carbon.DateTime `gorm:"column:insert_time" json:"insert_time"` // 录入时间
-}
-
-func (w *WorkDatasV3) GetData() []*WorkDatasV3 {
-	res := make([]*WorkDatasV3, 0, 30)
-	db.Find(&res)
-	return res
-}
-
-func (w *WorkDatasV3) GetCount() int64 {
-	var count int64
-	db.Model(w).Select("COUNT(*) AS count").Count(&count)
-	return count
-}
-func (w *WorkDatasV3) GetDataByWhere(offset, limit int) []*WorkDatasV3 {
-	res := make([]*WorkDatasV3, 0, 30)
-	db.Where(w).Limit(limit).Offset(offset).Find(&res)
-	return res
-}
-
-func (w *WorkDatasV3) Delete(dbobj *gorm.DB, query any, arg ...any) {
-	tmpdb := db
-	if dbobj != nil {
-		tmpdb = dbobj
-	}
-	tmpdb.Where(query, arg...).Delete(w)
-}
-func (w *WorkDatasV3) Insert(dbobj *gorm.DB, wdata ...*WorkDatasV3) error {
-	thisdb := db
-	if dbobj != nil {
-		thisdb = dbobj
-	}
-	lennum := 1
-	if n := len(wdata); n != 0 {
-		lennum = n
-	}
-	insert_data := make([]*WorkDatasV3, lennum)
-	if lennum > 1 {
-		for k, v := range wdata {
-			insert_data[k] = v
-		}
-	} else {
-		insert_data[0] = w
-	}
-	res := thisdb.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "kid"}},
-		DoUpdates: clause.AssignmentColumns([]string{"insert_type", "insert_time"}),
-	}).Create(insert_data)
-	if res.Error != nil {
-		return res.Error
-	}
-	return nil
 }
 
 // TableName get sql table name.获取数据库表名

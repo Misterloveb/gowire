@@ -11,6 +11,10 @@ func AuthVerifition(c *gin.Context) {
 	session := sessions.Default(c)
 	user := session.Get("userinfo")
 	if user == nil {
+		if c.Request.URL.Path == "/" {
+			c.Redirect(http.StatusMovedPermanently, "/login")
+			c.Abort()
+		}
 		obj := map[string]string{
 			"time":  "5",
 			"title": "未登录系统！",

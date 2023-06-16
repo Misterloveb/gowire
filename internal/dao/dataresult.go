@@ -16,8 +16,12 @@ func NewWorkDataResultDao(dao *Dao) *WorkDataResultDao {
 	}
 }
 
-func (w *WorkDataResultDao) Insert(data []*model.WorkDataresult) error {
-	res := w.db.Clauses(clause.OnConflict{
+func (w *WorkDataResultDao) Insert(dbobj *gorm.DB, data []*model.WorkDataresult) error {
+	tmpdb := w.Db
+	if dbobj != nil {
+		tmpdb = dbobj
+	}
+	res := tmpdb.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "pkid"}, {Name: "result_id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"result_id", "result_type", "result_info", "result_value"}),
 	}).Create(data)
@@ -27,7 +31,7 @@ func (w *WorkDataResultDao) Insert(data []*model.WorkDataresult) error {
 	return nil
 }
 func (w *WorkDataResultDao) Delete(dbobj *gorm.DB, query any, arg ...any) {
-	tmpdb := w.db
+	tmpdb := w.Db
 	if dbobj != nil {
 		tmpdb = dbobj
 	}
@@ -35,11 +39,11 @@ func (w *WorkDataResultDao) Delete(dbobj *gorm.DB, query any, arg ...any) {
 }
 func (w *WorkDataResultDao) GetData() []model.WorkDataresult {
 	resdata := make([]model.WorkDataresult, 0, 30)
-	w.db.Find(&resdata)
+	w.Db.Find(&resdata)
 	return resdata
 }
 func (w *WorkDataResultDao) GetDataByWhere(pkid, result_id string) []model.WorkDataresult {
 	resdata := make([]model.WorkDataresult, 0, 30)
-	w.db.Where("`pkid` = ? AND `result_id` = ?", pkid, result_id).Last(&resdata)
+	w.Db.Where("`pkid` = ? AND `result_id` = ?", pkid, result_id).Last(&resdata)
 	return resdata
 }

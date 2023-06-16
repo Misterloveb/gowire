@@ -14,15 +14,15 @@ func NewWorkResultDao(dao *Dao) *WorkResultDao {
 
 func (w *WorkResultDao) GetData() []model.WorkResult {
 	resdata := make([]model.WorkResult, 0, 30)
-	w.db.Find(&resdata)
+	w.Db.Find(&resdata)
 	return resdata
 }
 func (w *WorkResultDao) Insert(data []*model.WorkResult) error {
-	return w.db.Create(data).Statement.Error
+	return w.Db.Create(data).Statement.Error
 }
 func (w *WorkResultDao) Update(data *model.WorkResult) error {
-	return w.db.Save(data).Statement.Error
+	return w.Db.Save(data).Statement.Error
 }
 func (w *WorkResultDao) Delete(data *model.WorkResult) error {
-	return w.db.Delete(data).Statement.Error
+	return w.Db.Delete(data).Statement.Error
 }

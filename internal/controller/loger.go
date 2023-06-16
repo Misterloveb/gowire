@@ -17,7 +17,9 @@ import (
 )
 
 type LogerController struct {
+	*common.Server
 }
+
 type htmlAttribute struct {
 	Sort     bool   `json:"sort,omitempty"`
 	Hide     bool   `json:"hide,omitempty"`
@@ -55,9 +57,8 @@ var (
   		</script>`
 )
 
-func (l *LogerController) Querylog(ctx *gin.Context) {
-	workparam := &model.WorkParams{}
-	fieldsarr := workparam.GetData()
+func (ctl *LogerController) Querylog(ctx *gin.Context) {
+	fieldsarr := ctl.WorkParamsDao.GetData()
 	paramsarr := make([]*model.WorkParams, 0, 20)
 	htmlinit := make(htmlAttrArr, 3)
 	columnsarr := make([]htmlAttrArr, 1)
@@ -153,8 +154,7 @@ func (l *LogerController) Querylog(ctx *gin.Context) {
 			"child": []map[string]string{},
 		},
 	}
-	workresult := model.WorkResult{}
-	res2 := workresult.GetData()
+	res2 := ctl.WorkResultDao.GetData()
 	for _, val := range res2 {
 		resultarr[val.Type-1]["child"] = append((resultarr[val.Type-1]["child"]).([]map[string]string), map[string]string{
 			"title":  val.Info,
@@ -173,7 +173,7 @@ func (l *LogerController) Querylog(ctx *gin.Context) {
 	}
 	ctx.HTML(http.StatusOK, "Querylogindex.html", res)
 }
-func (l *LogerController) SearchData(ctx *gin.Context) {
+func (ctl *LogerController) SearchData(ctx *gin.Context) {
 	res := gin.H{
 		"code":  1,
 		"msg":   "暂无相关数据",
@@ -192,27 +192,26 @@ func (l *LogerController) SearchData(ctx *gin.Context) {
 	search_obj.Qingjiao = ctx.PostForm("qingjiao")
 	search_obj.Lcckbz = ctx.PostForm("lcckbz")
 	search_obj.InsertType, _ = common.PostInt8("insert_type", ctx)
-	res_data := search_obj.GetDataByWhere((page_num-1)*limit_num, limit_num)
+	res_data := ctl.WorkDatasV3Dao.GetDataByWhere(search_obj, (page_num-1)*limit_num, limit_num)
 	if len(res_data) == 0 {
 		ctx.JSON(200, res)
 		return
 	}
-	count_num := search_obj.GetCount()
+	count_num := ctl.WorkDatasV3Dao.GetCount(search_obj)
 	res["code"] = 0
 	res["msg"] = "查询数据成功！"
 	res["count"] = count_num
 	res["data"] = res_data
 	ctx.JSON(200, res)
 }
-func (l *LogerController) SearchResult(ctx *gin.Context) {
-	obj := &model.WorkDataresult{}
+func (ctl *LogerController) SearchResult(ctx *gin.Context) {
 	res := gin.H{
 		"status":  0,
 		"resdata": nil,
 	}
 	pkid := ctx.PostForm("kid")
 	result_id := ctx.PostForm("result_id")
-	res_data := obj.GetDataByWhere(pkid, result_id)
+	res_data := ctl.WorkDataResultDao.GetDataByWhere(pkid, result_id)
 	if len(res_data) == 0 {
 		ctx.JSON(200, res)
 		return
@@ -221,17 +220,14 @@ func (l *LogerController) SearchResult(ctx *gin.Context) {
 	res["resdata"] = res_data[0]
 	ctx.JSON(200, res)
 }
-func (l *LogerController) DeleteData(ctx *gin.Context) {
-	record := &model.WorkRecordV3{}
+func (ctl *LogerController) DeleteData(ctx *gin.Context) {
 	kids := ctx.PostForm("kid")
 	kids_arr := strings.Split(kids, ",")
-	img_files := record.GetDataByWhere("filepath", "pkid in ?", kids_arr)
-	model.DB().Transaction(func(tx *gorm.DB) error {
-		wdatares := &model.WorkDataresult{}
-		wdatav3 := &model.WorkDatasV3{}
-		record.Delete(tx, "pkid in ?", kids_arr)
-		wdatav3.Delete(tx, "kid in ?", kids_arr)
-		wdatares.Delete(tx, "kid in ?", kids_arr)
+	img_files := ctl.WorkRecordV3Dao.GetDataByWhere("filepath", "pkid in ?", kids_arr)
+	ctl.WorkDataResultDao.Db.Transaction(func(tx *gorm.DB) error {
+		ctl.WorkRecordV3Dao.Delete(tx, "pkid in ?", kids_arr)
+		ctl.WorkDatasV3Dao.Delete(tx, "kid in ?", kids_arr)
+		ctl.WorkDataResultDao.Delete(tx, "kid in ?", kids_arr)
 		return nil
 	})
 	if len(img_files) != 0 {
@@ -241,11 +237,10 @@ func (l *LogerController) DeleteData(ctx *gin.Context) {
 	}
 	ctx.JSON(200, gin.H{"status": 1})
 }
-func (l *LogerController) ViewImage(ctx *gin.Context) {
-	imgobj := &model.WorkRecordV3{}
+func (ctl *LogerController) ViewImage(ctx *gin.Context) {
 	pkid := ctx.Query("pkid")
 	result_id := ctx.Query("result_id")
-	res := imgobj.GetDataByWhere("*", "pkid = ? AND result_id = ?", pkid, result_id)
+	res := ctl.WorkRecordV3Dao.GetDataByWhere("*", "pkid = ? AND result_id = ?", pkid, result_id)
 	for _, v := range res {
 		v.Filepath = strings.ReplaceAll(v.Filepath, "\\", "/")
 	}
@@ -253,13 +248,12 @@ func (l *LogerController) ViewImage(ctx *gin.Context) {
 		"datas": res,
 	})
 }
-func (l *LogerController) DeleteImg(ctx *gin.Context) {
-	imgobj := &model.WorkRecordV3{}
+func (ctl *LogerController) DeleteImg(ctx *gin.Context) {
 	resdata := gin.H{
 		"status": 0,
 	}
 	id, _ := common.PostInt("id", ctx)
-	res := imgobj.GetDataByWhere("*", "id = ?", id)
+	res := ctl.WorkRecordV3Dao.GetDataByWhere("*", "id = ?", id)
 	if len(res) == 0 {
 		resdata["status"] = 1
 		ctx.JSON(200, resdata)
@@ -267,26 +261,25 @@ func (l *LogerController) DeleteImg(ctx *gin.Context) {
 	}
 	if common.DelFile(res[0].Filepath) {
 		resdata["status"] = 1
-		imgobj.Delete(nil, "id = ?", id)
+		ctl.WorkRecordV3Dao.Delete(nil, "id = ?", id)
 	}
 	ctx.JSON(200, resdata)
 	return
 }
-func (l *LogerController) CheckImg(ctx *gin.Context) {
-	imgobj := &model.WorkRecordV3{}
+func (ctl *LogerController) CheckImg(ctx *gin.Context) {
 	resdata := gin.H{"status": 0}
 	pkid := ctx.PostForm("kid")
 	result_id := ctx.PostForm("result_id")
-	res := imgobj.GetDataByWhere("id", "pkid = ? AND result_id = ?", pkid, result_id)
+	res := ctl.WorkRecordV3Dao.GetDataByWhere("id", "pkid = ? AND result_id = ?", pkid, result_id)
 	if len(res) != 0 {
 		resdata["status"] = 1
 	}
 	ctx.JSON(200, resdata)
 }
-func (l *LogerController) ExportDatas(ctx *gin.Context) {
+func (ctl *LogerController) ExportDatas(ctx *gin.Context) {
 
 }
-func (l *LogerController) OpenFileDir(ctx *gin.Context) {
+func (ctl *LogerController) OpenFileDir(ctx *gin.Context) {
 	file_path := ctx.PostForm("path")
 	argstr := "/c start explorer " + file_path
 	if common.FileExists(file_path) {
@@ -299,7 +292,7 @@ func (l *LogerController) OpenFileDir(ctx *gin.Context) {
 	}
 	ctx.JSON(200, gin.H{"status": 0})
 }
-func (l *LogerController) SaveLogs(ctx *gin.Context) {
+func (ctl *LogerController) SaveLogs(ctx *gin.Context) {
 	res_data := gin.H{"status": 0}
 	log_model := &model.WorkLog{}
 	if err := ctx.ShouldBindJSON(log_model); err != nil {
@@ -308,7 +301,7 @@ func (l *LogerController) SaveLogs(ctx *gin.Context) {
 	}
 	log_model.ID = 0
 	log_model.Addtime = int(time.Now().Unix())
-	if err := log_model.Insert(); err != nil {
+	if err := ctl.WorkLogDao.Insert([]*model.WorkLog{log_model}); err != nil {
 		ctx.JSON(200, res_data)
 		log.Default().Println(err)
 		return
@@ -316,11 +309,10 @@ func (l *LogerController) SaveLogs(ctx *gin.Context) {
 	res_data["status"] = 1
 	ctx.JSON(200, res_data)
 }
-func (l *LogerController) DeleteLog(ctx *gin.Context) {
+func (ctl *LogerController) DeleteLog(ctx *gin.Context) {
 	res_data := gin.H{"status": 0, "info": "删除失败"}
-	log_model := &model.WorkLog{}
 	ids := strings.Split(ctx.PostForm("ids"), ",")
-	if err := log_model.Delete("id in ?", ids); err != nil {
+	if err := ctl.WorkLogDao.Delete("id in ?", ids); err != nil {
 		ctx.JSON(200, res_data)
 		log.Default().Println(err)
 		return
@@ -336,22 +328,21 @@ type ViewWorkLog struct {
 	Addtime    string `json:"addtime,omitempty"`
 }
 
-func (l *LogerController) GetData(ctx *gin.Context) {
+func (ctl *LogerController) GetData(ctx *gin.Context) {
 	res_data := gin.H{
 		"code":  1,
 		"msg":   "暂无相关数据",
 		"count": 0,
 		"data":  nil,
 	}
-	log_mod := &model.WorkLog{}
 	page, _ := common.PostInt("page", ctx)
 	limit, _ := common.PostInt("limit", ctx)
-	count_num := log_mod.Count()
+	count_num := ctl.WorkLogDao.Count()
 	if count_num == 0 {
 		ctx.JSON(200, res_data)
 		return
 	}
-	fieldsarr := log_mod.GetData((page-1)*limit, limit)
+	fieldsarr := ctl.WorkLogDao.GetData((page-1)*limit, limit)
 	typestr := []string{1: "图片", 2: "数值", 3: "文件夹地址"}
 	res_data["code"] = 0
 	res_data["count"] = count_num

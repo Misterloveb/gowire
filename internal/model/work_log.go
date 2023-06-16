@@ -47,29 +47,6 @@ type WorkLog struct {
 	Addtime     int    `gorm:"column:addtime" json:"addtime"`           // 添加时间
 }
 
-func (w *WorkLog) Insert() error {
-	if res := db.Create(w); res.Error != nil {
-		return res.Error
-	}
-	return nil
-}
-func (w *WorkLog) GetData(offset, limit int) []*WorkLog {
-	res := make([]*WorkLog, 0, 32)
-	db.Order("`addtime` desc").Offset(offset).Limit(limit).Find(&res)
-	return res
-}
-func (w *WorkLog) Count() int64 {
-	var count int64
-	db.Model(w).Select("COUNT(*) AS count").Count(&count)
-	return count
-}
-func (w *WorkLog) Delete(query any, args ...any) error {
-	if res := db.Where(query, args...).Delete(w); res.Error != nil {
-		return res.Error
-	}
-	return nil
-}
-
 // TableName get sql table name.获取数据库表名
 func (w *WorkLog) TableName() string {
 	return "work_log"
