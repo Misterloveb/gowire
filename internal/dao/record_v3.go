@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"gindemo/internal/model"
+	"github.com/Misterloveb/gowire/internal/model"
 	"gorm.io/gorm"
 )
 

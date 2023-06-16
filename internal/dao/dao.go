@@ -3,7 +3,7 @@ package dao
 import (
 	"context"
 	"fmt"
-	"gindemo/pkg/writer"
+	"github.com/Misterloveb/gowire/pkg/writer"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"

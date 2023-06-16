@@ -1,7 +1,7 @@
 package server
 
 import (
-	"gindemo/internal/controller"
+	"github.com/Misterloveb/gowire/internal/controller"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"reflect"

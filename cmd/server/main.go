@@ -1,6 +1,6 @@
 package main
 
-import "gindemo/cmd/server/wire"
+import "github.com/Misterloveb/gowire/cmd/server/wire"
 
 func main() {
 	wire.App().Start()

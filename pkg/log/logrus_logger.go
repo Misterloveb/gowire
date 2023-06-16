@@ -1,7 +1,7 @@
 package log
 
 import (
-	"gindemo/pkg/writer"
+	"github.com/Misterloveb/gowire/pkg/writer"
 	"github.com/golang-module/carbon/v2"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"

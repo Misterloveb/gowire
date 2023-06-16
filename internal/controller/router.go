@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"gindemo/internal/middleware"
+	"github.com/Misterloveb/gowire/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 

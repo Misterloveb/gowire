@@ -4,8 +4,8 @@
 package wire
 
 import (
-	"gindemo/internal/provider"
-	"gindemo/pkg/http"
+	"github.com/Misterloveb/gowire/internal/provider"
+	"github.com/Misterloveb/gowire/pkg/http"
 	"github.com/google/wire"
 )
 

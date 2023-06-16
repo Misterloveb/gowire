@@ -1,8 +1,8 @@
 package common
 
 import (
-	"gindemo/internal/dao"
-	"gindemo/pkg/log"
+	"github.com/Misterloveb/gowire/internal/dao"
+	"github.com/Misterloveb/gowire/pkg/log"
 	"github.com/spf13/viper"
 )
 

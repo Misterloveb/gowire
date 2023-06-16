@@ -2,8 +2,8 @@ package server
 
 import (
 	"fmt"
-	"gindemo/internal/middleware"
-	"gindemo/pkg/writer"
+	"github.com/Misterloveb/gowire/internal/middleware"
+	"github.com/Misterloveb/gowire/pkg/writer"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-module/carbon/v2"
 	"github.com/spf13/viper"

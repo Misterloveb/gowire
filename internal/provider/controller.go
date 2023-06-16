@@ -1,7 +1,7 @@
 package provider
 
 import (
-	"gindemo/internal/controller"
+	"github.com/Misterloveb/gowire/internal/controller"
 	"github.com/google/wire"
 )
 

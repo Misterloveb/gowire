@@ -7,14 +7,14 @@
 package wire
 
 import (
-	"gindemo/internal/common"
-	"gindemo/internal/controller"
-	"gindemo/internal/dao"
-	"gindemo/internal/server"
-	"gindemo/pkg/config"
-	"gindemo/pkg/http"
-	"gindemo/pkg/log"
-	"gindemo/pkg/writer"
+	"github.com/Misterloveb/gowire/internal/common"
+	"github.com/Misterloveb/gowire/internal/controller"
+	"github.com/Misterloveb/gowire/internal/dao"
+	"github.com/Misterloveb/gowire/internal/server"
+	"github.com/Misterloveb/gowire/pkg/config"
+	"github.com/Misterloveb/gowire/pkg/http"
+	"github.com/Misterloveb/gowire/pkg/log"
+	"github.com/Misterloveb/gowire/pkg/writer"
 )
 
 // Injectors from wire.go:

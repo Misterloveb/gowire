@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"gindemo/internal/common"
-	"gindemo/internal/model"
+	"github.com/Misterloveb/gowire/internal/common"
+	"github.com/Misterloveb/gowire/internal/model"
 	"log"
 	"net/http"
 	"os"

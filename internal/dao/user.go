@@ -1,6 +1,6 @@
 package dao
 
-import "gindemo/internal/model"
+import "github.com/Misterloveb/gowire/internal/model"
 
 type UserDao struct {
 	*Dao

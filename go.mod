@@ -1,4 +1,4 @@
-module gindemo
+module github.com/Misterloveb/gowire
 
 go 1.18
 

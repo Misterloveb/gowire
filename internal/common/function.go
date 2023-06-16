@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
-	"gindemo/internal/model"
+	"github.com/Misterloveb/gowire/internal/model"
 	"os"
 	"strconv"
 	"strings"
