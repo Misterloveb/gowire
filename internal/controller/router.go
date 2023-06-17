@@ -3,8 +3,25 @@ package controller
 import (
 	"github.com/Misterloveb/gowire/internal/middleware"
 	"github.com/gin-gonic/gin"
+	"reflect"
 )
 
+type RegisterController struct {
+	Login  *LoginController
+	Loger  *LogerController
+	Index  *IndexController
+	System *SystemController
+}
+
+func (ctl *RegisterController) Register(r *gin.Engine) {
+	valuer := reflect.ValueOf(ctl).Elem()
+	numField := valuer.NumField()
+	for i := 0; i < numField; i++ {
+		if obj := valuer.Field(i).MethodByName("RegisterRouter"); obj != reflect.ValueOf(nil) {
+			obj.Call([]reflect.Value{reflect.ValueOf(r)})
+		}
+	}
+}
 func (ctl *LoginController) RegisterRouter(r *gin.Engine) {
 	r.StaticFile("/login", "./internal/view/login/login.html")
 	r.StaticFile("/register", "./internal/view/login/reg.html")

@@ -55,9 +55,6 @@ func (ctl *LoginController) Logout(ctx *gin.Context) {
 	session.Save()
 	ctx.HTML(http.StatusOK, "login.html", "")
 }
-func (ctl *LoginController) Forget(ctx *gin.Context) {
-	ctx.HTML(http.StatusOK, "forget.html", "")
-}
 func (ctl *LoginController) Register(ctx *gin.Context) {
 	user := &model.User{}
 	pwd := []byte(strings.Trim(ctx.PostForm("password"), " "))

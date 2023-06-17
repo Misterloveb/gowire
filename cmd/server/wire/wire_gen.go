@@ -57,7 +57,7 @@ func App() *http.HTTP {
 	systemController := &controller.SystemController{
 		Server: commonServer,
 	}
-	registerController := &server.RegisterController{
+	registerController := &controller.RegisterController{
 		Login:  loginController,
 		Loger:  logerController,
 		Index:  indexController,
