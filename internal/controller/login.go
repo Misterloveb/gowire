@@ -56,7 +56,7 @@ func (ctl *LoginController) Logout(ctx *gin.Context) {
 	ctx.HTML(http.StatusOK, "login.html", "")
 }
 func (ctl *LoginController) Register(ctx *gin.Context) {
-	user := &model.User{}
+	user := &model.DemoUser{}
 	pwd := []byte(strings.Trim(ctx.PostForm("password"), " "))
 	salt := fmt.Sprintf("%x", sha256.Sum256([]byte(uuid.NewString())))
 	user.Salt = salt

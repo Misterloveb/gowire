@@ -28,7 +28,6 @@ func (ctl *LoginController) RegisterRouter(r *gin.Engine) {
 	r.POST("/register", ctl.Register)
 	r.POST("/captcha", ctl.GetCaptcha)
 	r.POST("/login", ctl.Login)
-	r.GET("/forget", ctl.Forget)
 	r.GET("/logout", ctl.Logout)
 
 	r.Use(middleware.AuthVerifition)

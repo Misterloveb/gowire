@@ -14,8 +14,8 @@ CREATE TABLE `work_record_v3` (
   UNIQUE KEY `kidfilename` (`pkid`,`result_id`,`filename`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC
 ******sql******/
-// WorkRecordV3 [...]
-type WorkRecordV3 struct {
+// RecordV3 [...]
+type RecordV3 struct {
 	ID       int    `gorm:"primaryKey;column:id" json:"-"`
 	Pkid     string `gorm:"column:pkid" json:"pkid"`               // 数据表kid
 	ResultID int    `gorm:"column:result_id" json:"resultId"`      // 结果类型id
@@ -27,6 +27,6 @@ type WorkRecordV3 struct {
 }
 
 // TableName get sql table name.获取数据库表名
-func (w *WorkRecordV3) TableName() string {
-	return "work_record_v3"
+func (w *RecordV3) TableName() string {
+	return "demo_record_v3"
 }

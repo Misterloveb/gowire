@@ -16,7 +16,7 @@ func NewWorkDataResultDao(dao *Dao) *WorkDataResultDao {
 	}
 }
 
-func (w *WorkDataResultDao) Insert(dbobj *gorm.DB, data []*model.WorkDataresult) error {
+func (w *WorkDataResultDao) Insert(dbobj *gorm.DB, data []*model.Dataresult) error {
 	tmpdb := w.Db
 	if dbobj != nil {
 		tmpdb = dbobj
@@ -35,15 +35,15 @@ func (w *WorkDataResultDao) Delete(dbobj *gorm.DB, query any, arg ...any) {
 	if dbobj != nil {
 		tmpdb = dbobj
 	}
-	tmpdb.Where(query, arg...).Delete(&model.WorkDataresult{})
+	tmpdb.Where(query, arg...).Delete(&model.Dataresult{})
 }
-func (w *WorkDataResultDao) GetData() []model.WorkDataresult {
-	resdata := make([]model.WorkDataresult, 0, 30)
+func (w *WorkDataResultDao) GetData() []model.Dataresult {
+	resdata := make([]model.Dataresult, 0, 30)
 	w.Db.Find(&resdata)
 	return resdata
 }
-func (w *WorkDataResultDao) GetDataByWhere(pkid, result_id string) []model.WorkDataresult {
-	resdata := make([]model.WorkDataresult, 0, 30)
+func (w *WorkDataResultDao) GetDataByWhere(pkid, result_id string) []model.Dataresult {
+	resdata := make([]model.Dataresult, 0, 30)
 	w.Db.Where("`pkid` = ? AND `result_id` = ?", pkid, result_id).Last(&resdata)
 	return resdata
 }

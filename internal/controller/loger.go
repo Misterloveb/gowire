@@ -59,7 +59,7 @@ var (
 
 func (ctl *LogerController) Querylog(ctx *gin.Context) {
 	fieldsarr := ctl.WorkParamsDao.GetData()
-	paramsarr := make([]*model.WorkParams, 0, 20)
+	paramsarr := make([]*model.DemoParams, 0, 20)
 	htmlinit := make(htmlAttrArr, 3)
 	columnsarr := make([]htmlAttrArr, 1)
 	columnsarr2 := make([]htmlAttrArr, 1)
@@ -185,7 +185,7 @@ func (ctl *LogerController) SearchData(ctx *gin.Context) {
 		ctx.JSON(200, res)
 		return
 	}
-	search_obj := &model.WorkDatasV3{}
+	search_obj := &model.DatasV3{}
 	page_num, _ := common.PostInt("page", ctx)
 	limit_num, _ := common.PostInt("limit", ctx)
 	search_obj.Zhuansu = ctx.PostForm("zhuansu")
@@ -294,14 +294,14 @@ func (ctl *LogerController) OpenFileDir(ctx *gin.Context) {
 }
 func (ctl *LogerController) SaveLogs(ctx *gin.Context) {
 	res_data := gin.H{"status": 0}
-	log_model := &model.WorkLog{}
+	log_model := &model.DemoLog{}
 	if err := ctx.ShouldBindJSON(log_model); err != nil {
 		ctx.JSON(200, res_data)
 		return
 	}
 	log_model.ID = 0
 	log_model.Addtime = int(time.Now().Unix())
-	if err := ctl.WorkLogDao.Insert([]*model.WorkLog{log_model}); err != nil {
+	if err := ctl.WorkLogDao.Insert([]*model.DemoLog{log_model}); err != nil {
 		ctx.JSON(200, res_data)
 		log.Default().Println(err)
 		return
@@ -323,7 +323,7 @@ func (ctl *LogerController) DeleteLog(ctx *gin.Context) {
 }
 
 type ViewWorkLog struct {
-	*model.WorkLog
+	*model.DemoLog
 	ResultType string `json:"result_type,omitempty"`
 	Addtime    string `json:"addtime,omitempty"`
 }
@@ -350,7 +350,7 @@ func (ctl *LogerController) GetData(ctx *gin.Context) {
 	res_data["data"] = make([]*ViewWorkLog, 0, 64)
 	for _, v := range fieldsarr {
 		res := &ViewWorkLog{}
-		res.WorkLog = v
+		res.DemoLog = v
 		res.ResultType = typestr[v.ResultType]
 		res.Addtime = carbon.CreateFromTimestamp(int64(v.Addtime)).Format("Y-m-d H:i:s")
 		res_data["data"] = append(res_data["data"].([]*ViewWorkLog), res)

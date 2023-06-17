@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func HashKey(src *model.WorkDatasV3) string {
+func HashKey(src *model.DatasV3) string {
 	stringbuf := strings.Builder{}
 	stringbuf.Grow(100)
 	stringbuf.WriteString(src.Zhuansu)

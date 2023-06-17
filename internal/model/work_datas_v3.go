@@ -25,8 +25,8 @@ CREATE TABLE `work_datas_v3` (
   UNIQUE KEY `datakid` (`kid`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC
 ******sql******/
-// WorkDatasV3 [...]
-type WorkDatasV3 struct {
+// DatasV3 [...]
+type DatasV3 struct {
 	ID         int             `gorm:"primaryKey;column:id" json:"-"`
 	Kid        string          `gorm:"column:kid" json:"kid"`
 	Zhuansu    string          `gorm:"column:zhuansu" json:"zhuansu"`         // 转速
@@ -45,6 +45,6 @@ type WorkDatasV3 struct {
 }
 
 // TableName get sql table name.获取数据库表名
-func (w *WorkDatasV3) TableName() string {
-	return "work_datas_v3"
+func (w *DatasV3) TableName() string {
+	return "demo_datas_v3"
 }

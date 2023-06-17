@@ -23,7 +23,7 @@ mysql:
   port: 3306
   user: root
   pwd: root
-  db: workapp
+  db: demoapp
   charset: utf8mb4,utf8
   MaxIdleTime: 30   #最大空闲连接时间(秒)
   MaxIdleConns: 10  #空闲连接池最大数量

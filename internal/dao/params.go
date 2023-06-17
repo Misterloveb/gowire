@@ -17,13 +17,13 @@ func NewWorkParamsDao(dao *Dao) *WorkParamsDao {
 	}
 }
 
-func (w *WorkParamsDao) GetData() []*model.WorkParams {
-	resdata := make([]*model.WorkParams, 0, 30)
+func (w *WorkParamsDao) GetData() []*model.DemoParams {
+	resdata := make([]*model.DemoParams, 0, 30)
 	w.Db.Order("`order`").Find(&resdata)
 	return resdata
 }
 func (w *WorkParamsDao) Update(data url.Values) error {
-	dst := &model.WorkParams{}
+	dst := &model.DemoParams{}
 	str_buff := strings.Builder{}
 	args_arr := make([]any, 0, len(data)*2)
 	str_buff.Grow(1024)

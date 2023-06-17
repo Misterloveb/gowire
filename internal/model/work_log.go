@@ -24,8 +24,8 @@ CREATE TABLE `work_log` (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC
 ******sql******/
-// WorkLog [...]
-type WorkLog struct {
+// DemoLog [...]
+type DemoLog struct {
 	ID          int    `gorm:"primaryKey;column:id" json:"id"`
 	Kid         string `gorm:"column:kid" json:"kid"`
 	Zhuansu     string `gorm:"column:zhuansu" json:"zhuansu"`           // 转速
@@ -48,6 +48,6 @@ type WorkLog struct {
 }
 
 // TableName get sql table name.获取数据库表名
-func (w *WorkLog) TableName() string {
-	return "work_log"
+func (w *DemoLog) TableName() string {
+	return "demo_log"
 }

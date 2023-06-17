@@ -12,8 +12,8 @@ CREATE TABLE `work_dataresult` (
   UNIQUE KEY `kidandresid` (`pkid`,`result_id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8
 ******sql******/
-// WorkDataresult [...]
-type WorkDataresult struct {
+// Dataresult [...]
+type Dataresult struct {
 	ID          int    `gorm:"primaryKey;column:id" json:"-"`
 	Pkid        string `gorm:"column:pkid" json:"pkid"`                 // 所属参数表kid
 	ResultID    string `gorm:"column:result_id" json:"result_id"`       // 所属结果表id
@@ -23,6 +23,6 @@ type WorkDataresult struct {
 }
 
 // TableName get sql table name.获取数据库表名
-func (w *WorkDataresult) TableName() string {
-	return "work_dataresult"
+func (w *Dataresult) TableName() string {
+	return "demo_dataresult"
 }

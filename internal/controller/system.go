@@ -72,10 +72,10 @@ func (ctl *SystemController) SaveImgDirPath(ctx *gin.Context) {
 	ctx.JSON(200, gin.H{"status": 1})
 }
 func (ctl *SystemController) AddResult(ctx *gin.Context) {
-	mod_workresult := &model.WorkResult{}
+	mod_workresult := &model.DemoResult{}
 	_ = ctx.ShouldBindWith(mod_workresult, binding.Form)
 	res_data := gin.H{"status": 0}
-	if err := ctl.WorkResultDao.Insert([]*model.WorkResult{mod_workresult}); err != nil {
+	if err := ctl.WorkResultDao.Insert([]*model.DemoResult{mod_workresult}); err != nil {
 		ctx.JSON(200, res_data)
 		return
 	}
@@ -84,7 +84,7 @@ func (ctl *SystemController) AddResult(ctx *gin.Context) {
 	ctx.JSON(200, res_data)
 }
 func (ctl *SystemController) EditReuslt(ctx *gin.Context) {
-	mod_workresult := &model.WorkResult{}
+	mod_workresult := &model.DemoResult{}
 	_ = ctx.ShouldBindWith(mod_workresult, binding.Form)
 	res_data := gin.H{"status": 0}
 	if err := ctl.WorkResultDao.Update(mod_workresult); err != nil {
@@ -95,7 +95,7 @@ func (ctl *SystemController) EditReuslt(ctx *gin.Context) {
 	ctx.JSON(200, res_data)
 }
 func (ctl *SystemController) DeleteResult(ctx *gin.Context) {
-	mod_workresult := &model.WorkResult{}
+	mod_workresult := &model.DemoResult{}
 	id, err := strconv.Atoi(ctx.PostForm("id"))
 	if err != nil {
 		ctx.JSON(200, gin.H{"status": 0})

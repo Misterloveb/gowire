@@ -48,8 +48,8 @@ func (ctl *IndexController) Handinsert(ctx *gin.Context) {
 	})
 }
 func (ctl *IndexController) SaveDatas(ctx *gin.Context) {
-	insert_data := &model.WorkDatasV3{}
-	insert_data2 := &model.WorkDataresult{}
+	insert_data := &model.DatasV3{}
+	insert_data2 := &model.Dataresult{}
 	res2 := ctl.WorkResultDao.GetData()
 	resdata := gin.H{
 		"status": 0,
@@ -80,12 +80,12 @@ func (ctl *IndexController) SaveDatas(ctx *gin.Context) {
 	}
 	insert_data2.Pkid = insert_data.Kid
 	err = ctl.WorkParamsDao.Db.Transaction(func(tx *gorm.DB) error {
-		if err := ctl.WorkDatasV3Dao.Insert(tx, []*model.WorkDatasV3{insert_data}); err != nil {
+		if err := ctl.WorkDatasV3Dao.Insert(tx, []*model.DatasV3{insert_data}); err != nil {
 			resdata["info"] = err.Error() + "1"
 			ctx.JSON(http.StatusBadRequest, resdata)
 			return err
 		}
-		if err := ctl.WorkDataResultDao.Insert(tx, []*model.WorkDataresult{insert_data2}); err != nil {
+		if err := ctl.WorkDataResultDao.Insert(tx, []*model.Dataresult{insert_data2}); err != nil {
 			resdata["info"] = err.Error() + "2"
 			ctx.JSON(http.StatusBadRequest, resdata)
 			return err
@@ -105,7 +105,7 @@ func (ctl *IndexController) SaveDatas(ctx *gin.Context) {
 }
 func (ctl *IndexController) SaveImages(ctx *gin.Context) {
 	file, err := ctx.FormFile("file")
-	imgobj := &model.WorkRecordV3{}
+	imgobj := &model.RecordV3{}
 	pid := strings.Trim(ctx.PostForm("pid"), " ")
 	if len(pid) != 64 {
 		ctx.JSON(200, gin.H{
@@ -145,7 +145,7 @@ func (ctl *IndexController) SaveImages(ctx *gin.Context) {
 		})
 		return
 	}
-	if err := ctl.WorkRecordV3Dao.Insert(nil, []*model.WorkRecordV3{imgobj}); err != nil {
+	if err := ctl.WorkRecordV3Dao.Insert(nil, []*model.RecordV3{imgobj}); err != nil {
 		ctx.JSON(200, gin.H{
 			"status": 0,
 			"info":   err.Error(),
@@ -162,7 +162,7 @@ type colParam struct {
 	name string
 }
 
-func (ctl *IndexController) makeColMap(pararms []*model.WorkParams, result []model.WorkResult) map[string]*colParam {
+func (ctl *IndexController) makeColMap(pararms []*model.DemoParams, result []model.DemoResult) map[string]*colParam {
 	cellarr := make(map[string]*colParam, len(pararms)+len(result))
 	var strbuffer strings.Builder
 	strbuffer.Grow(64)
@@ -347,9 +347,9 @@ func (ctl *IndexController) ImportExcel(ctx *gin.Context) {
 }
 func (ctl *IndexController) batchInsert(rows *excelize.Rows) error {
 	rows.Next()
-	work_data_arr := make([]*model.WorkDatasV3, 0, 200)
-	work_dataresult_arr := make([]*model.WorkDataresult, 0, 200)
-	work_record_arr := make([]*model.WorkRecordV3, 0, 200)
+	work_data_arr := make([]*model.DatasV3, 0, 200)
+	work_dataresult_arr := make([]*model.Dataresult, 0, 200)
+	work_record_arr := make([]*model.RecordV3, 0, 200)
 	info_arr, err := rows.Columns()
 	if err != nil {
 		return err
@@ -394,14 +394,14 @@ func (ctl *IndexController) batchInsert(rows *excelize.Rows) error {
 	}
 	return nil
 }
-func (ctl *IndexController) makeWorkDateResult(pkid string, colarr, namearr, infoarr []string) ([]*model.WorkDataresult, []*model.WorkRecordV3) {
-	wdatares := make([]*model.WorkDataresult, 0, 16)
-	wrecord := make([]*model.WorkRecordV3, 0, 16)
+func (ctl *IndexController) makeWorkDateResult(pkid string, colarr, namearr, infoarr []string) ([]*model.Dataresult, []*model.RecordV3) {
+	wdatares := make([]*model.Dataresult, 0, 16)
+	wrecord := make([]*model.RecordV3, 0, 16)
 	for i := 11; i < 25; i++ {
 		res_type := strings.Split(namearr[i], "-")
 		if val := colarr[i]; val != "" {
 			rtype, _ := strconv.Atoi(res_type[1])
-			wdr := &model.WorkDataresult{
+			wdr := &model.Dataresult{
 				Pkid:       pkid,
 				ResultID:   res_type[0],
 				ResultType: uint8(rtype),
@@ -425,8 +425,8 @@ func (ctl *IndexController) makeWorkDateResult(pkid string, colarr, namearr, inf
 	}
 	return wdatares, wrecord
 }
-func (ctl *IndexController) makeWorkRecord(imgstr string, pkid string, resultid int) []*model.WorkRecordV3 {
-	wrecord := make([]*model.WorkRecordV3, 0, 32)
+func (ctl *IndexController) makeWorkRecord(imgstr string, pkid string, resultid int) []*model.RecordV3 {
+	wrecord := make([]*model.RecordV3, 0, 32)
 	root_img_path, err := os.ReadFile(imgdirpath)
 	if err != nil {
 		log.Println("图片地址读取失败")
@@ -440,7 +440,7 @@ func (ctl *IndexController) makeWorkRecord(imgstr string, pkid string, resultid 
 			img_ext := filepath.Ext(imgname)
 			img_name := uuid.New().String() + img_ext
 			img_dst_path := ctl.Viper.GetString("upload.upload_path") + "/img/" + img_name
-			wr := &model.WorkRecordV3{
+			wr := &model.RecordV3{
 				Pkid:     pkid,
 				ResultID: resultid,
 				Status:   true,
@@ -467,8 +467,8 @@ func (ctl *IndexController) makeWorkRecord(imgstr string, pkid string, resultid 
 	}
 	return wrecord
 }
-func (ctl *IndexController) makeWorkData(colarr []string, insert_time carbon.DateTime) *model.WorkDatasV3 {
-	workdata := &model.WorkDatasV3{
+func (ctl *IndexController) makeWorkData(colarr []string, insert_time carbon.DateTime) *model.DatasV3 {
+	workdata := &model.DatasV3{
 		Zhuansu:  colarr[0],
 		Qingjiao: colarr[1],
 		Hxfxll:   colarr[2],

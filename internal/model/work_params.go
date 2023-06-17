@@ -15,8 +15,8 @@ CREATE TABLE `work_params` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8
 ******sql******/
-// WorkParams [...]
-type WorkParams struct {
+// DemoParams [...]
+type DemoParams struct {
 	ID        int    `gorm:"primaryKey;column:id" json:"-"`
 	Info      string `gorm:"column:info" json:"info"`            // 参数中文名
 	Name      string `gorm:"column:name" json:"name"`            // 参数英文名
@@ -30,6 +30,6 @@ type WorkParams struct {
 }
 
 // TableName get sql table name.获取数据库表名
-func (w *WorkParams) TableName() string {
-	return "work_params"
+func (w *DemoParams) TableName() string {
+	return "demo_params"
 }
