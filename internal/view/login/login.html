@@ -61,7 +61,8 @@
         </div>
 
         <div class="layui-trans layadmin-user-login-footer">
-            <p>系统版本:version@2021~2023</p>
+            <i class="layui-icon layui-icon-github"></i>
+            <a href="https://github.com/Misterloveb/gowire" target="_blank" > 欢迎star <i class="layui-icon layui-icon-face-smile-fine"></i></a>
         </div>
     </div>
 
@@ -107,7 +108,8 @@
                                 , icon: 1
                                 , time: 2000
                             }, function () {
-                                location.href = '/'; //后台主页
+                                window.location.href = "/"
+                                return
                             });
                         }else{
                             layer.msg('登录失败'+res.msg, {
@@ -127,10 +129,6 @@
                                 });
                             });
                         }
-                        id = res.id;
-                        b64s = res.b64s;
-                        $('#captchaimg').attr('src', b64s)
-                        $('#captid').attr('value', id)
                     }
                 });
             });

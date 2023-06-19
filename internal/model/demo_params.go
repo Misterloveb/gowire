@@ -1,5 +1,7 @@
 package model
 
+import "encoding/json"
+
 /******sql******
 CREATE TABLE `work_params` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -27,6 +29,14 @@ type DemoParams struct {
 	Order     int    `gorm:"column:order" json:"order"`          // 参数顺序
 	Childrens string `gorm:"column:childrens" json:"childrens"`  // 参数的值
 	HTMLWidth uint16 `gorm:"column:html_width" json:"htmlWidth"` // 参数的宽度
+}
+
+func (w *DemoParams) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, w)
+}
+
+func (w *DemoParams) MarshalBinary() (data []byte, err error) {
+	return json.Marshal(w)
 }
 
 // TableName get sql table name.获取数据库表名

@@ -24,7 +24,7 @@ func NewDB(conf *viper.Viper) *gorm.DB {
 		conf.GetString("mysql.user"),
 		conf.GetString("mysql.pwd"),
 		conf.GetString("mysql.ip"),
-		conf.GetUint("mysql.port"),
+		conf.GetInt("mysql.port"),
 		conf.GetString("mysql.db"),
 		conf.GetString("mysql.charset"),
 	)
@@ -42,11 +42,13 @@ func NewDB(conf *viper.Viper) *gorm.DB {
 		Logger: newLogger,
 	})
 	if err != nil {
-		log.Fatal("数据库连接失败")
+		log.Println("ip=", conf.GetString("mysql.ip"))
+		log.Println("port=", conf.GetString("mysql.port"))
+		log.Fatal("数据库连接失败", err.Error())
 	}
 	sqldb, err := dbobj.DB()
 	if err != nil {
-		log.Fatal("数据库获取失败")
+		log.Fatal("数据库获取失败", err.Error())
 	}
 	//最大空闲连接时间
 	sqldb.SetConnMaxIdleTime(time.Second * conf.GetDuration("mysql.MaxIdleTime"))
@@ -60,17 +62,17 @@ func NewDB(conf *viper.Viper) *gorm.DB {
 }
 func NewRedis(conf *viper.Viper) *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     conf.GetString("redis.addr"),
+		Addr:     conf.GetString("redis.ip") + ":" + conf.GetString("redis.port"),
 		Password: conf.GetString("redis.password"),
 		DB:       conf.GetInt("redis.db"),
 	})
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
 	_, err := rdb.Ping(ctx).Result()
 	if err != nil {
-		panic(fmt.Sprintf("redis 连接失败: %s", err.Error()))
+		log.Println(fmt.Sprintf("redis 连接失败: %s", err.Error()))
+		return nil
 	}
-
 	return rdb
 }

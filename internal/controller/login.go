@@ -53,7 +53,8 @@ func (ctl *LoginController) Logout(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	session.Delete("userinfo")
 	session.Save()
-	ctx.HTML(http.StatusOK, "login.html", "")
+	ctx.SetCookie(ctl.Viper.GetString("session.sessionId"), "ss", -1, "/", "", false, true)
+	ctx.Redirect(http.StatusMovedPermanently, "/login")
 }
 func (ctl *LoginController) Register(ctx *gin.Context) {
 	user := &model.DemoUser{}

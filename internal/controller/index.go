@@ -33,7 +33,7 @@ type IndexController struct {
 
 func (ctl *IndexController) Index(ctx *gin.Context) {
 	session := sessions.Default(ctx)
-	ctl.Logger.Info("hello")
+	ctl.Logger.Info("hello", session.Get("userinfo"))
 	ctx.HTML(http.StatusOK, "home.html", gin.H{
 		"user": session.Get("userinfo"),
 	})
@@ -162,7 +162,7 @@ type colParam struct {
 	name string
 }
 
-func (ctl *IndexController) makeColMap(pararms []*model.DemoParams, result []model.DemoResult) map[string]*colParam {
+func (ctl *IndexController) makeColMap(pararms []*model.DemoParams, result []*model.DemoResult) map[string]*colParam {
 	cellarr := make(map[string]*colParam, len(pararms)+len(result))
 	var strbuffer strings.Builder
 	strbuffer.Grow(64)

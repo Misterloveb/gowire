@@ -15,7 +15,7 @@ import (
 var Config = wire.NewSet(config.NewViper)
 
 var (
-	daoStrcut = wire.Struct(new(dao.Dao), "Db")
+	daoStrcut = wire.Struct(new(dao.Dao), "Db", "Rdb")
 	NewDao    = wire.NewSet(daoStrcut, NewDB, NewRedis)
 	NewDB     = wire.NewSet(dao.NewDB)
 	NewRedis  = wire.NewSet(dao.NewRedis)

@@ -20,7 +20,7 @@ type HTTP struct {
 
 func NewHTTP(handler *gin.Engine, conf *viper.Viper) *HTTP {
 	return &HTTP{
-		addr:    conf.GetString("app.addr"),
+		addr:    conf.GetString("app.ip") + ":" + conf.GetString("app.port"),
 		handler: handler,
 	}
 }

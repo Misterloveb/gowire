@@ -23,9 +23,11 @@ func registerMiddleware(r *gin.Engine, conf *viper.Viper) {
 
 func ginLogger(conf *viper.Viper) gin.HandlerFunc {
 	var writeor io.Writer
-	writeor = writer.NewWriter(conf, "httplog")
+
 	if conf.GetString("app.gin_mode") == gin.DebugMode {
-		writeor = io.MultiWriter(os.Stdout, writeor)
+		writeor = os.Stdout
+	} else {
+		writeor = writer.NewWriter(conf, "httplog")
 	}
 	skippath := strings.Split(conf.GetString("app.nologurl"), ",")
 	return gin.LoggerWithConfig(gin.LoggerConfig{

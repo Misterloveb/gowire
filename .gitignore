@@ -1,6 +1,4 @@
 /log/
 /.idea/
-.idea
-.vscode
 *.log
-/.vscode/
+/upload

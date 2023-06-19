@@ -12,8 +12,9 @@ func AuthVerifition(c *gin.Context) {
 	user := session.Get("userinfo")
 	if user == nil {
 		if c.Request.URL.Path == "/" {
-			c.Redirect(http.StatusMovedPermanently, "/login")
+			c.Redirect(http.StatusFound, "/login")
 			c.Abort()
+			return
 		}
 		obj := map[string]string{
 			"time":  "5",
@@ -21,6 +22,7 @@ func AuthVerifition(c *gin.Context) {
 		}
 		c.HTML(http.StatusUnauthorized, "error401.html", obj)
 		c.Abort()
+		return
 	}
 	c.Next()
 }

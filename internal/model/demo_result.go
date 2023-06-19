@@ -1,5 +1,7 @@
 package model
 
+import "encoding/json"
+
 /******sql******
 CREATE TABLE `work_result` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -18,4 +20,11 @@ type DemoResult struct {
 // TableName get sql table name.获取数据库表名
 func (w *DemoResult) TableName() string {
 	return "demo_result"
+}
+func (w *DemoResult) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, w)
+}
+
+func (w *DemoResult) MarshalBinary() (data []byte, err error) {
+	return json.Marshal(w)
 }

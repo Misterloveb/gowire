@@ -25,8 +25,10 @@ func App() *http.HTTP {
 	writerWriter := writer.NewWriter(viper, string2)
 	logger := log.NewLogger(viper, writerWriter)
 	db := dao.NewDB(viper)
+	client := dao.NewRedis(viper)
 	daoDao := &dao.Dao{
-		Db: db,
+		Db:  db,
+		Rdb: client,
 	}
 	workParamsDao := dao.NewWorkParamsDao(daoDao)
 	workResultDao := dao.NewWorkResultDao(daoDao)

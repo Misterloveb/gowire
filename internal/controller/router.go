@@ -29,14 +29,12 @@ func (ctl *LoginController) RegisterRouter(r *gin.Engine) {
 	r.POST("/captcha", ctl.GetCaptcha)
 	r.POST("/login", ctl.Login)
 	r.GET("/logout", ctl.Logout)
-
-	r.Use(middleware.AuthVerifition)
 }
 
 func (ctl *IndexController) RegisterRouter(r *gin.Engine) {
-	r.GET("/", ctl.Index)
+	r.GET("/", middleware.AuthVerifition, ctl.Index)
 	gIndex := r.Group("/index")
-
+	gIndex.Use(middleware.AuthVerifition)
 	gIndex.GET("/Handinsert", ctl.Handinsert)
 	gIndex.GET("/explodeExcel", ctl.ExplodeExcel)
 
@@ -48,7 +46,7 @@ func (ctl *IndexController) RegisterRouter(r *gin.Engine) {
 
 func (ctl *LogerController) RegisterRouter(r *gin.Engine) {
 	gRoute := r.Group("/loger")
-
+	gRoute.Use(middleware.AuthVerifition)
 	gRoute.GET("/Querylog", ctl.Querylog)
 	gRoute.GET("/viewImage", ctl.ViewImage)
 	gRoute.GET("/exportDatas", ctl.ExportDatas)
@@ -66,7 +64,7 @@ func (ctl *LogerController) RegisterRouter(r *gin.Engine) {
 
 func (ctl *SystemController) RegisterRouter(r *gin.Engine) {
 	gSystem := r.Group("/system")
-
+	gSystem.Use(middleware.AuthVerifition)
 	gSystem.GET("/SystemSettings", ctl.SystemSettings)
 
 	gSystem.POST("/saveParamsDatas", ctl.SaveParamsDatas)

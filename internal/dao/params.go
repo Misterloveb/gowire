@@ -1,10 +1,13 @@
 package dao
 
 import (
+	"context"
+	"encoding/json"
 	"github.com/Misterloveb/gowire/internal/model"
 	"log"
 	"net/url"
 	"strings"
+	"time"
 )
 
 type WorkParamsDao struct {
@@ -19,7 +22,24 @@ func NewWorkParamsDao(dao *Dao) *WorkParamsDao {
 
 func (w *WorkParamsDao) GetData() []*model.DemoParams {
 	resdata := make([]*model.DemoParams, 0, 30)
-	w.Db.Order("`order`").Find(&resdata)
+	if w.Rdb == nil {
+		w.Db.Order("`order`").Find(&resdata)
+		return resdata
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	stat := w.Rdb.Get(ctx, "wpm")
+	if stat.Err() != nil {
+		w.Db.Order("`order`").Find(&resdata)
+		jsRes, err := json.Marshal(resdata)
+		if err != nil {
+			log.Println(err.Error())
+			return nil
+		}
+		w.Rdb.Set(ctx, "wpm", jsRes, 3600*time.Second)
+	} else {
+		json.Unmarshal([]byte(stat.Val()), &resdata)
+	}
 	return resdata
 }
 func (w *WorkParamsDao) Update(data url.Values) error {

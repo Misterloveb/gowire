@@ -1,0 +1,44 @@
+version: '3'
+services:
+  gowire:
+    container_name: gowire_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+      - rdb
+    ports:
+      - "8080:8080"
+    restart: on-failure
+  db:
+    container_name: gowire_mysql
+    image: mysql:5.7.42
+    restart: always
+    command: '--default-authentication-plugin=mysql_native_password'
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    expose:
+      - 3306
+    ports:
+      - "3308:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./docker/dbinit:/docker-entrypoint-initdb.d/
+  rdb:
+    container_name: gowire_redis
+    image: redis:6.0
+    restart: always
+    command: '--requirepass 654321'
+    expose:
+      - 6379
+    ports:
+      - "6381:6379"
+    volumes:
+      - rdb-data:/var/lib/redis
+volumes:
+  db-data:
+  rdb-data:
+
+
+

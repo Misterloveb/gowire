@@ -9,8 +9,6 @@ import (
 )
 
 func registerSource(conf *viper.Viper, r *gin.Engine) {
-	//注册中间件
-	registerMiddleware(r, conf)
 	//注册自定义模板函数
 	setTplFun(r)
 	//模板文件
