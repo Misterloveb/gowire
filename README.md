@@ -37,7 +37,7 @@
     - `config`：用于读取配置文件信息(基于viper)
     - `http`：启动http(gin.Engine)用于支持Shutdown服务器优雅退出
     - `verificationcode`：图形验证码插件
-    - `writer`：用于实现`gin`,`gorm`,`logrus`的`io.Writer`接口，支持自定义文件大小，文件保存周期，文件分割等功能，具体可以参考 `lumberjack` https://gopkg.in/natefinch/lumberjack.v2
+    - `writer`：用于实现`gin`,`gorm`,`logrus`的`io.Writer`接口，支持自定义文件大小，文件保存周期，文件分割等功能，具体可以参考 [lumberjack](https://gopkg.in/natefinch/lumberjack.v2) 
 - `static`：静态资源文件(css/js等)
 - `upload`：存放用户上传的附件
 - `log`：项目的日志文件(启动项目后自动生成)：
