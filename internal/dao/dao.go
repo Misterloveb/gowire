@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"github.com/Misterloveb/gowire/pkg/writer"
 	"github.com/redis/go-redis/v9"
@@ -18,7 +19,11 @@ type Dao struct {
 	Rdb *redis.Client
 }
 
+//go:embed dbinit/demoapp.sql
+var initSql string
+
 func NewDB(conf *viper.Viper) *gorm.DB {
+	initDataBase(conf)
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=True&loc=Local",
 		conf.GetString("mysql.user"),
@@ -75,4 +80,28 @@ func NewRedis(conf *viper.Viper) *redis.Client {
 		return nil
 	}
 	return rdb
+}
+func initDataBase(conf *viper.Viper) {
+	dsn := fmt.Sprintf(
+		"%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=True&loc=Local&multiStatements=true",
+		conf.GetString("mysql.user"),
+		conf.GetString("mysql.pwd"),
+		conf.GetString("mysql.ip"),
+		conf.GetInt("mysql.port"),
+		"",
+		conf.GetString("mysql.charset"),
+	)
+	dbname := conf.GetString("mysql.db")
+	dbobj, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatal("数据库连接失败：", err.Error())
+	}
+	res, err := dbobj.Raw("show databases like '" + dbname + "'").Rows()
+	if !res.Next() {
+		//不存在数据库则创建
+		sta := dbobj.Exec(initSql).Statement
+		if sta.Error != nil {
+			log.Fatal("数据库创建失败！", sta.Error.Error())
+		}
+	}
 }

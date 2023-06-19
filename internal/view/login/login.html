@@ -17,24 +17,25 @@
 
         <div class="layadmin-user-login-main">
             <div class="layadmin-user-login-box layadmin-user-login-header">
-                <h2>欢迎登录系统</h2>
+                <h2>欢迎登录</h2>
             </div>
             <div class="layadmin-user-login-box layadmin-user-login-body layui-form">
                 <div class="layui-form-item">
                     <label class="layadmin-user-login-icon layui-icon layui-icon-username"
                         for="LAY-user-login-username"></label>
                     <input type="text" name="username" id="LAY-user-login-username" lay-verify="required"
-                        placeholder="昵称" class="layui-input">
+                        placeholder="昵称 (admin)" class="layui-input">
                 </div>
                 <div class="layui-form-item">
                     <label class="layadmin-user-login-icon layui-icon layui-icon-password"
                         for="LAY-user-login-password"></label>
                     <input type="password" name="password" id="LAY-user-login-password" lay-verify="required"
-                        placeholder="密码" class="layui-input">
+                        placeholder="密码 (123123)" class="layui-input">
                 </div>
                 <div class="layui-form-item">
                     <div class="layui-row">
                         <div class="layui-col-xs7">
+                            <label class="layadmin-user-login-icon layui-icon layui-icon-vercode"></label>
                             <input type="text" name="vercode" lay-verify="required"
                                 placeholder="图形验证码" class="layui-input">
                         </div>
@@ -61,8 +62,13 @@
         </div>
 
         <div class="layui-trans layadmin-user-login-footer">
-            <i class="layui-icon layui-icon-github"></i>
-            <a href="https://github.com/Misterloveb/gowire" target="_blank" > 欢迎star <i class="layui-icon layui-icon-face-smile-fine"></i></a>
+            <p>
+            <a href="https://github.com/Misterloveb/gowire" target="_blank" >
+                <i class="layui-icon layui-icon-github"></i>
+                <i class="layui-icon layui-icon-heart-fill" style="color: red"></i>
+                欢迎star
+                <i class="layui-icon layui-icon-heart-fill" style="color: red"></i></a>
+            </p>
         </div>
     </div>
 

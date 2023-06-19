@@ -180,6 +180,7 @@ CREATE TABLE `demo_user`  (
   INDEX `idx_work_user_deleted_at`(`deleted_at`) USING BTREE
 ) ENGINE = MyISAM AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
+INSERT INTO `demo_user` (`id`, `created_at`, `updated_at`, `deleted_at`, `username`, `password`, `salt`) VALUES (1, '2023-05-19 19:10:21.205', '2023-05-19 19:10:21.205', NULL, 'admin', '15e8b230d9a98ffe8dd1cd066c8015dacf64a1988404445d55b935a2cd65a9ee', 'd70e3cc4bd3b951d69ffa186fd93d8e11d687df226fad39f07852caa643458ba');
 -- ----------------------------
 -- Records of demo_user
 -- ----------------------------

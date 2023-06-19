@@ -20,11 +20,8 @@ services:
       - MYSQL_ROOT_PASSWORD=root
     expose:
       - 3306
-    ports:
-      - "3308:3306"
     volumes:
       - db-data:/var/lib/mysql
-      - ./docker/dbinit:/docker-entrypoint-initdb.d/
   rdb:
     container_name: gowire_redis
     image: redis:6.0
@@ -32,8 +29,6 @@ services:
     command: '--requirepass 654321'
     expose:
       - 6379
-    ports:
-      - "6381:6379"
     volumes:
       - rdb-data:/var/lib/redis
 volumes:
