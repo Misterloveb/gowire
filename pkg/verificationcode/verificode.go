@@ -18,7 +18,7 @@ func NewVerifiCode(driver base64Captcha.Driver) *VerifiCode {
 }
 func (v *VerifiCode) Generate() (id, b64s string, err error) {
 	c := base64Captcha.NewCaptcha(v.driver, v.store)
-	id, b64s, err = c.Generate()
+	id, b64s, _, err = c.Generate()
 	return
 }
 

@@ -1,0 +1,12 @@
+一个自己实现的 sso 单点登录,支持跨域，基于redis消息订阅，当一个节点退出时，所有在线节点均退出
+
+运行：
+    前提：
+        1：依赖redis,docker开启即可，端口6379
+        2：需要修改hosts文件 添加：
+            127.0.0.1 www.app1.com
+            127.0.0.1 www.app2.com
+            127.0.0.1 www.sso.com
+    启动：
+        1：运行 TestSSO 启动 sso 管理中心
+        2：运行 TestApp1 TestApp2 模拟多应用场景
